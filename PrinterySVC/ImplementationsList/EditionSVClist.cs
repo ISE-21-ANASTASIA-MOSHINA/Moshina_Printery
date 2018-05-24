@@ -83,7 +83,7 @@ namespace PrinterySVC.ImplementationsList
             {
                 Number = maxNumber + 1,
                 EditionName = model.EditionName,
-                CostEdition = model.Coast
+                CostEdition = model.Price
             });
             // компоненты для изделия
             int maxPCNumber = source.EditionMaterials.Count > 0 ?
@@ -123,7 +123,7 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
             element.EditionName = model.EditionName;
-            element.CostEdition = model.Coast;
+            element.CostEdition = model.Price;
 
             int maxPCNumber = source.EditionMaterials.Count > 0 ? source.EditionMaterials.Max(rec => rec.Number) : 0;
             // обновляем существуюущие компоненты
@@ -194,12 +194,12 @@ namespace PrinterySVC.ImplementationsList
             throw new NotImplementedException();
         }
 
-        void IEditionSVC.AddElement(EdiitionBindingModel model)
+        void IEditionSVC.AddElement(EditionBindingModel model)
         {
             throw new NotImplementedException();
         }
 
-        void IEditionSVC.UpElement(EdiitionBindingModel model)
+        void IEditionSVC.UpElement(EditionBindingModel model)
         {
             throw new NotImplementedException();
         }
