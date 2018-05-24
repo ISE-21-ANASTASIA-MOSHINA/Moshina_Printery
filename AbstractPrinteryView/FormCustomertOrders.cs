@@ -1,31 +1,17 @@
 ﻿using Microsoft.Reporting.WinForms;
 using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormCustomertOrders : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
-        private readonly IReportSVC service;
-
-        public FormCustomertOrders(IReportSVC service)
+        public FormCustomertOrders()
         {
             InitializeComponent();
-            this.service = service;
         }
 
 
@@ -50,13 +36,20 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    service.SaveCustomerOrders(new ReportBindingModel
+                    var response = APIClient.PostRequest("api/Report/SaveCustomerOrders", new ReportBindingModel
                     {
                         FileName = sfd.FileName,
                         DateFrom = dateTimePickerFrom.Value,
                         DateTo = dateTimePickerTo.Value
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -82,15 +75,23 @@ namespace AbstractPrinteryView
                                                 " по " + dateTimePickerTo.Value.ToShortDateString());
                     reportViewer.LocalReport.SetParameters(parameter);
 
-                    var dataSource = service.GetCustomerOrders(new ReportBindingModel
-                    {
-                        DateFrom = dateTimePickerFrom.Value,
-                        DateTo = dateTimePickerTo.Value
-                    });
-                    ReportDataSource source = new ReportDataSource("DataSetBooking", dataSource);
+                var response = APIClient.PostRequest("api/Report/GetCustomerOrders", new ReportBindingModel
+                {
+                    DateFrom = dateTimePickerFrom.Value,
+                    DateTo = dateTimePickerTo.Value
+                });
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    var dataSource = APIClient.GetElement<List<CustomerBindingModel>>(response);
+                    ReportDataSource source = new ReportDataSource("DataSet", dataSource);
                     reportViewer.LocalReport.DataSources.Add(source);
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
 
-                    reportViewer.RefreshReport();
+                reportViewer.RefreshReport();
                 }
                 catch (Exception ex)
                 {

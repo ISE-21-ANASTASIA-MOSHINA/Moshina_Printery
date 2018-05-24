@@ -52,6 +52,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,7 +66,6 @@
     <Compile Include="BindingModel\CustomerBindingModel.cs" />
     <Compile Include="BindingModel\EditionBindingModel.cs" />
     <Compile Include="BindingModel\ReportBindingModel.cs" />
-    <Compile Include="EditionBindingModel.cs" />
     <Compile Include="BindingModel\EditionMaterialBindingModel.cs" />
     <Compile Include="BindingModel\MaterialBindingModel.cs" />
     <Compile Include="BindingModel\RackBindingModel.cs" />
@@ -125,7 +125,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Resources\TIMCYR.TTF" />
   </ItemGroup>

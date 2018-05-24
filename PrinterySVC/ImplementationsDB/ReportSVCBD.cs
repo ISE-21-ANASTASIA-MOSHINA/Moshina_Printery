@@ -131,7 +131,7 @@ namespace PrinterySVC.ImplementationsDB
             {
                 RackName = rack.RackName,
                 TotalCount = RackMaterialList.Sum(r => r.Count),
-                Materials = RackMaterialList.Select(r => new Tuple<string, int>(r.Material.MaterialName, r.Count))
+                Materials = RackMaterialList.Select(r => new RacksMaterailLoadViewModel { MaterialName = r.Material.MaterialName, Count = r.Count }).ToList()
             })
                             .ToList();
         }
@@ -218,9 +218,9 @@ namespace PrinterySVC.ImplementationsDB
 
                             foreach (var listElem in elem.Materials)
                             {
-                                excelcells.Value2 = listElem.Item1;
+                                excelcells.Value2 = listElem.MaterialName;
                                 excelcells.ColumnWidth = 10;
-                                excelcells.get_Offset(0, 1).Value2 = listElem.Item2;
+                                excelcells.get_Offset(0, 1).Value2 = listElem.Count;
                                 excelcells = excelcells.get_Offset(1, 0);
                             }
                         }

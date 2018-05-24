@@ -99,7 +99,7 @@
             this.Controls.Add(this.buttonSaveToExcel);
             this.Name = "FormRacksLoad";
             this.Text = "FormRacksLoad";
-            this.Load += new System.EventHandler(this.FormStocksLoad_Load);
+            this.Load += new System.EventHandler(this.FormRacksLoad_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
 

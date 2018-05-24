@@ -1,30 +1,17 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormTypographers : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
-        private readonly ITypographerSVC service;
-
-        public FormTypographers(ITypographerSVC service)
+        public FormTypographers()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormTypographers_Load(object sender, EventArgs e)
@@ -36,12 +23,20 @@ namespace AbstractPrinteryView
         {
             try
             {
-                List<TypographerViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Typographer/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -52,7 +47,7 @@ namespace AbstractPrinteryView
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormTypographer>();
+            var form = new FormTypographer();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -63,7 +58,7 @@ namespace AbstractPrinteryView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormTypographer>();
+                var form = new FormTypographer();
                 form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -81,7 +76,12 @@ namespace AbstractPrinteryView
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                     try
                     {
-                        service.DelElement(id);
+
+                        var response = APIClient.PostRequest("api/Typographer/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {
