@@ -21,148 +21,98 @@ namespace PrinterySVC.ImplementationsList
 
         public List<RackViewModel> GetList()
         {
-            List<RackViewModel> result = new List<RackViewModel>();
-            for (int i = 0; i < source.Racks.Count; ++i)
-            {
-                // требуется дополнительно получить список компонентов на складе и их количество
-                List<RackMaterialViewModel> RackMaterial = new List<RackMaterialViewModel>();
-                for (int j = 0; j < source.RackMaterials.Count; ++j)
+            List<RackViewModel> result = source.Racks
+                .Select(rec => new RackViewModel
                 {
-                    if (source.RackMaterials[j].RackNamber == source.Racks[i].Number)
-                    {
-                        string materialName = string.Empty;
-                        for (int k = 0; k < source.Materials.Count; ++k)
-                        {
-                            if (source.EditionMaterials[j].MaterialNamber == source.Materials[k].Number)
+                    Number = rec.Number,
+                    RackName = rec.RackName,
+                    RackMaterial = source.RackMaterials
+                            .Where(recPC => recPC.RackNamber == rec.Number)
+                            .Select(recPC => new RackMaterialViewModel
                             {
-                                materialName = source.Materials[k].MaterialName;
-                                break;
-                            }
-                        }
-                        RackMaterial.Add(new RackMaterialViewModel
-                        {
-                            Namber = source.RackMaterials[j].Namber,
-                            RackNamber = source.RackMaterials[j].RackNamber,
-                            MaterialNameber = source.RackMaterials[j].MaterialNamber,
-                            MaterialName = materialName,
-                            Count = source.RackMaterials[j].Count
-                        });
-                    }
-                }
-                result.Add(new RackViewModel
-                {
-                    Number = source.Racks[i].Number,
-                    RackName = source.Racks[i].RackName,
-                    RackMaterial = RackMaterial
-                });
-            }
+                                Namber = recPC.Namber,
+                                RackNamber = recPC.RackNamber,
+                                MaterialNameber = recPC.MaterialNamber,
+                                MaterialName = source.Materials
+                                    .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                Count = recPC.Count
+                            })
+                            .ToList()
+                })
+                .ToList();
             return result;
         }
 
         public RackViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Racks.Count; ++i)
+            Rack element = source.Racks.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                // требуется дополнительно получить список компонентов на складе и их количество
-                List<RackMaterialViewModel> RackMaterial = new List <RackMaterialViewModel>();
-                for (int j = 0; j < source.RackMaterials.Count; ++j)
+                return new RackViewModel
                 {
-                    if (source.RackMaterials[j].RackNamber == source.Racks[i].Number)
-                    {
-                        string materialName = string.Empty;
-                        for (int k = 0; k < source.Materials.Count; ++k)
-                        {
-                            if (source.EditionMaterials[j].MaterialNamber == source.Materials[k].Number)
+                    Number = element.Number,
+                    RackName = element.RackName,
+                    RackMaterial = source.RackMaterials
+                            .Where(recPC => recPC.RackNamber == element.Number)
+                            .Select(recPC => new RackMaterialViewModel
                             {
-                                materialName = source.Materials[k].MaterialName;
-                                break;
-                            }
-                        }
-                        RackMaterial.Add(new RackMaterialViewModel
-                        {
-                            Namber = source.RackMaterials[j].Namber,
-                            RackNamber = source.RackMaterials[j].RackNamber,
-                            MaterialNameber = source.RackMaterials[j].MaterialNamber,
-                            MaterialName = materialName,
-                            Count = source.RackMaterials[j].Count
-                        });
-                    }
-                }
-                if (source.Racks[i].Number == id)
-                {
-                    return new RackViewModel
-                    {
-                        Number = source.Racks[i].Number,
-                        RackName = source.Racks[i].RackName,
-                        RackMaterial = RackMaterial
-                    };
-                }
+                                Namber = recPC.Namber,
+                                RackNamber = recPC.RackNamber,
+                                MaterialNameber = recPC.MaterialNamber,
+                                MaterialName = source.Materials
+                                    .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                Count = recPC.Count
+                            })
+                            .ToList()
+                };
             }
             throw new Exception("Элемент не найден");
         }
 
         public void AddElement(RackBindingModel model)
         {
-            int maxId = 0;
-            for (int i = 0; i < source.Racks.Count; ++i)
+            Rack element = source.Racks.FirstOrDefault(rec => rec.RackName == model.RackName);
+            if (element != null)
             {
-                if (source.Racks[i].Number > maxId)
-                {
-                    maxId = source.Racks[i].Number;
-                }
-                if (source.Racks[i].RackName == model.RackName)
-                {
-                    throw new Exception("Уже есть склад с таким названием");
-                }
+                throw new Exception("Уже есть склад с таким названием");
             }
+            int maxNumber = source.Racks.Count > 0 ? source.Racks.Max(rec => rec.Number) : 0;
             source.Racks.Add(new Rack
             {
-                Number= maxId + 1,
+                Number = maxNumber + 1,
                 RackName = model.RackName
             });
         }
 
         public void UpElement(RackBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Racks.Count; ++i)
+            Rack element = source.Racks.FirstOrDefault(rec =>
+                                        rec.RackName == model.RackName && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Racks[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Racks[i].RackName == model.RackName &&
-                    source.Racks[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть склад с таким названием");
-                }
+                throw new Exception("Уже есть склад с таким названием");
             }
-            if (index == -1)
+            element = source.Racks.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Racks[index].RackName = model.RackName;
+            element.RackName = model.RackName;
         }
 
         public void DelElement(int id)
         {
-            // при удалении удаляем все записи о компонентах на удаляемом складе
-            for (int i = 0; i < source.RackMaterials.Count; ++i)
+            Rack element = source.Racks.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.RackMaterials[i].RackNamber == id)
-                {
-                    source.RackMaterials.RemoveAt(i--);
-                }
+                // при удалении удаляем все записи о компонентах на удаляемом складе
+                source.RackMaterials.RemoveAll(rec => rec.RackNamber == id);
+                source.Racks.Remove(element);
             }
-            for (int i = 0; i < source.Racks.Count; ++i)
+            else
             {
-                if (source.Racks[i].Number== id)
-                {
-                    source.Racks.RemoveAt(i);
-                    return;
-                }
+                throw new Exception("Элемент не найден");
             }
-            throw new Exception("Элемент не найден");
         }
     }
 }

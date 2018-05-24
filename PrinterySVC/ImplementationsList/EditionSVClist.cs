@@ -21,104 +21,64 @@ namespace PrinterySVC.ImplementationsList
 
         public List<EditionViewModel> GetList()
         {
-            List<EditionViewModel> result = new List<EditionViewModel>();
-            for (int i = 0; i < source.Editions.Count; ++i)
-            {
-                // требуется дополнительно получить список компонентов для изделия и их количество
-                List<EditionMaterialViewModel> editionMaterial = new List<EditionMaterialViewModel>();
-                for (int j = 0; j < source.EditionMaterials.Count; ++j)
+            List<EditionViewModel> result = source.Editions
+                .Select(rec => new EditionViewModel
                 {
-                    if (source.EditionMaterials[j].EditionNamber == source.Editions[i].Number)
-                    {
-                        string materialName = string.Empty;
-                        for (int k = 0; k < source.Editions.Count; ++k)
-                        {
-                            if (source.EditionMaterials[j].EditionNamber == source.Editions[k].Number)
+                    Number = rec.Number,
+                    EditionName = rec.EditionName,
+                    Cost = rec.CostEdition,
+                    EditionMaterials = source.EditionMaterials
+                            .Where(recPC => recPC.EditionNamber == rec.Number)
+                            .Select(recPC => new EditionMaterialViewModel
                             {
-                                materialName = source.Editions[k].EditionName;
-                                break;
-                            }
-                        }
-                        editionMaterial.Add(new EditionMaterialViewModel
-                        {
-                            Number = source.EditionMaterials[j].Number,
-                            EditionNamber = source.EditionMaterials[j].EditionNamber,
-                            MaterialNamber = source.EditionMaterials[j].MaterialNamber,
-                            MaterialName = materialName,
-                            Count = source.EditionMaterials[j].Count
-                        });
-                    }
-                }
-                result.Add(new EditionViewModel
-                {
-                    Number = source.Editions[i].Number,
-                    EditionName = source.Editions[i].EditionName,
-                    Cost = source.Editions[i].CostEdition,
-                    EditionMaterials = editionMaterial
-                });
-            }
+                                Number = recPC.Number,
+                                EditionNamber = recPC.EditionNamber,
+                                MaterialNamber = recPC.MaterialNamber,
+                                MaterialName = source.Materials
+                                    .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                Count = recPC.Count
+                            })
+                            .ToList()
+                })
+                .ToList();
             return result;
         }
 
-        public EditionViewModel GetElement(int number)
+        public EditionViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Editions.Count; ++i)
+            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                // требуется дополнительно получить список компонентов для изделия и их количество
-                List<EditionMaterialViewModel> editionMaterial = new List<EditionMaterialViewModel>();
-                for (int j = 0; j < source.EditionMaterials.Count; ++j)
+                return new EditionViewModel
                 {
-                    if (source.EditionMaterials[j].EditionNamber == source.Editions[i].Number)
-                    {
-                        string materialName = string.Empty;
-                        for (int k = 0; k < source.Editions.Count; ++k)
-                        {
-                            if (source.EditionMaterials[j].MaterialNamber == source.Materials[k].Number)
+                    Number = element.Number,
+                    EditionName = element.EditionName,
+                    Cost = element.CostEdition,
+                    EditionMaterials = source.EditionMaterials
+                            .Where(recPC => recPC.EditionNamber == element.Number)
+                            .Select(recPC => new EditionMaterialViewModel
                             {
-                                materialName = source.Materials[k].MaterialName;
-                                break;
-                            }
-                        }
-                        editionMaterial.Add(new EditionMaterialViewModel
-                        {
-                            Number = source.EditionMaterials[j].Number,
-                            EditionNamber = source.EditionMaterials[j].EditionNamber,
-                            MaterialNamber = source.EditionMaterials[j].MaterialNamber,
-                            MaterialName = materialName,
-                            Count = source.EditionMaterials[j].Count
-                        });
-                    }
-                }
-                if (source.Editions[i].Number == number)
-                {
-                    return new EditionViewModel
-                    {
-                        Number = source.Editions[i].Number,
-                        EditionName = source.Editions[i].EditionName,
-                        Cost = source.Editions[i].CostEdition,
-                        EditionMaterials = editionMaterial
-                    };
-                }
+                                Number = recPC.Number,
+                                EditionNamber = recPC.EditionNamber,
+                                MaterialNamber = recPC.MaterialNamber,
+                                MaterialName = source.Materials
+                                        .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                Count = recPC.Count
+                            })
+                            .ToList()
+                };
             }
-
             throw new Exception("Элемент не найден");
         }
 
-
-        public void AddElement(EdiitionBindingModel model)
+        public void AddElement(EditionBindingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Editions.Count; ++i)
+            Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
+            if (element != null)
             {
-                if (source.Editions[i].Number > maxNumber)
-                {
-                    maxNumber = source.Editions[i].Number;
-                }
-                if (source.Editions[i].EditionName == model.EditionName)
-                {
-                    throw new Exception("Уже есть изделие с таким названием");
-                }
+                throw new Exception("Уже есть изделие с таким названием");
             }
+            int maxNumber = source.Editions.Count > 0 ? source.Editions.Max(rec => rec.Number) : 0;
             source.Editions.Add(new Edition
             {
                 Number = maxNumber + 1,
@@ -126,144 +86,127 @@ namespace PrinterySVC.ImplementationsList
                 CostEdition = model.Coast
             });
             // компоненты для изделия
-            int maxPCId = 0;
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
-            {
-                if (source.EditionMaterials[i].Number > maxPCId)
-                {
-                    maxPCId = source.EditionMaterials[i].Number;
-                }
-            }
+            int maxPCNumber = source.EditionMaterials.Count > 0 ?
+                                    source.EditionMaterials.Max(rec => rec.Number) : 0;
             // убираем дубли по компонентам
-            for (int i = 0; i < model.EditionMaterials.Count; ++i)
+            var groupMaterials = model.EditionMaterials
+                                        .GroupBy(rec => rec.MaterialNamber)
+                                        .Select(rec => new
+                                        {
+                                            MaterialNumber = rec.Key,
+                                            Count = rec.Sum(r => r.Count)
+                                        });
+            // добавляем компоненты
+            foreach (var groupMaterial in groupMaterials)
             {
-                for (int j = 1; j < model.EditionMaterials.Count; ++j)
+                source.EditionMaterials.Add(new EditionMaterial
                 {
-                    if (model.EditionMaterials[i].MaterialNamber ==
-                        model.EditionMaterials[j].MaterialNamber)
-                    {
-                        model.EditionMaterials[i].Count +=
-                            model.EditionMaterials[j].Count;
-                        model.EditionMaterials.RemoveAt(j--);
-                    }
+                    Number = ++maxPCNumber,
+                    EditionNamber = maxNumber + 1,
+                    MaterialNamber = groupMaterial.MaterialNumber,
+                    Count = groupMaterial.Count
+                });
+            }
+        }
 
-                }
-            }
-                // добавляем компоненты
-                for (int i = 0; i < model.EditionMaterials.Count; ++i)
-                {
-                    source.EditionMaterials.Add(new EditionMaterial
-                    {
-                        Number = ++maxPCId,
-                        EditionNamber = maxNumber + 1,
-                        MaterialNamber = model.EditionMaterials[i].MaterialNamber,
-                        Count = model.EditionMaterials[i].Count
-                    });
-                }
-            }
-        
-        public void UpElement(EdiitionBindingModel model)
+        public void UpElement(EditionBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Editions.Count; ++i)
+            Edition element = source.Editions.FirstOrDefault(rec =>
+                                        rec.EditionName == model.EditionName && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Editions[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Editions[i].EditionName == model.EditionName &&
-                    source.Editions[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть изделие с таким названием");
-                }
+                throw new Exception("Уже есть изделие с таким названием");
             }
-            if (index == -1)
+            element = source.Editions.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Editions[index].EditionName = model.EditionName;
-            source.Editions[index].CostEdition = model.Coast;
-            int maxPCId = 0;
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
-            {
-                if (source.EditionMaterials[i].Number > maxPCId)
-                {
-                    maxPCId = source.EditionMaterials[i].Number;
-                }
-            }
+            element.EditionName = model.EditionName;
+            element.CostEdition = model.Coast;
+
+            int maxPCNumber = source.EditionMaterials.Count > 0 ? source.EditionMaterials.Max(rec => rec.Number) : 0;
             // обновляем существуюущие компоненты
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
+            var compNumbers = model.EditionMaterials.Select(rec => rec.MaterialNamber).Distinct();
+            var updateMaterials = source.EditionMaterials
+                                            .Where(rec => rec.EditionNamber == model.Number &&
+                                           compNumbers.Contains(rec.MaterialNamber));
+            foreach (var updateMaterial in updateMaterials)
             {
-                if (source.EditionMaterials[i].EditionNamber == model.Number)
-                {
-                    bool flag = true;
-                    for (int j = 0; j < model.EditionMaterials.Count; ++j)
-                    {
-                        // если встретили, то изменяем количество
-                        if (source.EditionMaterials[i].Number== model.EditionMaterials[j].Number)
-                        {
-                            source.EditionMaterials[i].Count = model.EditionMaterials[j].Count;
-                            flag = false;
-                            break;
-                        }
-                    }
-                    // если не встретили, то удаляем
-                    if (flag)
-                    {
-                        source.EditionMaterials.RemoveAt(i--);
-                    }
-                }
+                updateMaterial.Count = model.EditionMaterials
+                                                .FirstOrDefault(rec => rec.Number == updateMaterial.Number).Count;
             }
+            source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == model.Number &&
+                                       !compNumbers.Contains(rec.MaterialNamber));
             // новые записи
-            for (int i = 0; i < model.EditionMaterials.Count; ++i)
+            var groupMaterials = model.EditionMaterials
+                                        .Where(rec => rec.Number == 0)
+                                        .GroupBy(rec => rec.MaterialNamber)
+                                        .Select(rec => new
+                                        {
+                                            MaterialNumber = rec.Key,
+                                            Count = rec.Sum(r => r.Count)
+                                        });
+            foreach (var groupMaterial in groupMaterials)
             {
-                if (model.EditionMaterials[i].Number == 0)
+                EditionMaterial elementPC = source.EditionMaterials
+                                        .FirstOrDefault(rec => rec.EditionNamber == model.Number &&
+                                                        rec.MaterialNamber == groupMaterial.MaterialNumber);
+                if (elementPC != null)
                 {
-                    // ищем дубли
-                    for (int j = 0; j < source.EditionMaterials.Count; ++j)
+                    elementPC.Count += groupMaterial.Count;
+                }
+                else
+                {
+                    source.EditionMaterials.Add(new EditionMaterial
                     {
-                        if (source.EditionMaterials[j].EditionNamber == model.Number &&
-                            source.EditionMaterials[j].MaterialNamber == model.EditionMaterials[i].MaterialNamber  ) 
-                        {
-                            source.EditionMaterials[j].Count += model.EditionMaterials[i].Count;
-                            model.EditionMaterials[i].Number= source.EditionMaterials[j].Number;
-                            break;
-                        }
-                    }
-                    // если не нашли дубли, то новая запись
-                    if (model.EditionMaterials[i].Number == 0)
-                    {
-                        source.EditionMaterials.Add(new EditionMaterial
-                        {
-                            Number= ++maxPCId,
-                            EditionNamber = model.Number,
-                            MaterialNamber = model.EditionMaterials[i].MaterialNamber,
-                            Count = model.EditionMaterials[i].Count
-                        });
-                    }
+                        Number = ++maxPCNumber,
+                        EditionNamber = model.Number,
+                        MaterialNamber = groupMaterial.MaterialNumber,
+                        Count = groupMaterial.Count
+                    });
                 }
             }
         }
 
         public void DelElement(int id)
         {
-            // удаяем записи по компонентам при удалении изделия
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
+            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.EditionMaterials[i].EditionNamber == id)
-                {
-                    source.EditionMaterials.RemoveAt(i--);
-                }
+                // удаяем записи по компонентам при удалении изделия
+                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
+                source.Editions.Remove(element);
             }
-            for (int i = 0; i < source.Editions.Count; ++i)
+            else
             {
-                if (source.Editions[i].Number == id)
-                {
-                    source.Editions.RemoveAt(i);
-                    return;
-                }
+                throw new Exception("Элемент не найден");
             }
-            throw new Exception("Элемент не найден");
+        }
+
+        List<EditionViewModel> IEditionSVC.GetList()
+        {
+            throw new NotImplementedException();
+        }
+
+        EditionViewModel IEditionSVC.GetElement(int number)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IEditionSVC.AddElement(EdiitionBindingModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IEditionSVC.UpElement(EdiitionBindingModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IEditionSVC.DelElement(int number)
+        {
+            throw new NotImplementedException();
         }
     }
 }
