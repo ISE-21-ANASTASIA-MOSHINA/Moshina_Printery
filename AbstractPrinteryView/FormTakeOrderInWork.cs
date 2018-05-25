@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AbstractPrinteryView
@@ -27,25 +28,21 @@ namespace AbstractPrinteryView
                     MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Close();
                 }
-                var response = APIClient.GetRequest("api/Typographer/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<TypographerViewModel> list = Task.Run(() => APIClient.GetRequestData<List<TypographerViewModel>>("api/Typographer/GetList")).Result;
+                if (list != null)
                 {
-                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
-                    if (list != null)
-                    {
-                        comboBoxTypographer.DisplayMember = "TypographerFIO";
-                        comboBoxTypographer.ValueMember = "Number";
-                        comboBoxTypographer.DataSource = list;
-                        comboBoxTypographer.SelectedItem = null;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    comboBoxTypographer.DisplayMember = "TypographerFIO";
+                    comboBoxTypographer.ValueMember = "Number";
+                    comboBoxTypographer.DataSource = list;
+                    comboBoxTypographer.SelectedItem = null;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -59,31 +56,39 @@ namespace AbstractPrinteryView
             }
             try
             {
-                var response = APIClient.PostRequest("api/Main/TakeBookingInWork", new BookingBindingModel
+                int typographerId = Convert.ToInt32(comboBoxTypographer.SelectedValue);
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Main/TakeBookingInWork", new BookingBindingModel
                 {
                     Number = id.Value,
-                    TypographerNumber = Convert.ToInt32(comboBoxTypographer.SelectedValue)
-                });
-                if (response.Result.IsSuccessStatusCode)
+                    TypographerNumber = typographerId
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Заказ передан в работу. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+                task.ContinueWith((prevTask) =>
                 {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+
+                Close();
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
