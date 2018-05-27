@@ -34,12 +34,6 @@ namespace AbstractPrinteryView
                     comboBoxTypographer.DisplayMember = "TypographerFIO";
                     comboBoxTypographer.ValueMember = "Number";
 
-
-                    /*     =3     ^_^    =D      0_0      =(    >_<        */
-                    /*     =3     ^_^    =D      0_0      =(    >_<        */
-                    /*     =3     ^_^    =D      0_0      =(    >_<        */
-                    /*     =3     ^_^    =D      0_0      =(    >_<        */
-                    /*     =3     ^_^    =D      0_0      =(    >_<        */
                     comboBoxTypographer.DataSource = list;
                     comboBoxTypographer.SelectedItem = null;
                 }
@@ -65,12 +59,6 @@ namespace AbstractPrinteryView
             {
                 var huiniya = comboBoxTypographer.SelectedValue;
                 int typographerId = Convert.ToInt32(comboBoxTypographer.SelectedValue);
-
-                /*     =3     ^_^    =D      0_0      =(    >_<        */
-                /*     =3     ^_^    =D      0_0      =(    >_<        */
-                /*     =3     ^_^    =D      0_0      =(    >_<        */
-                /*     =3     ^_^    =D      0_0      =(    >_<        */
-                /*     =3     ^_^    =D      0_0      =(    >_<        */
                 Task task = Task.Run(() => APIClient.PostRequestData("api/Main/TakeBookingInWork", new BookingBindingModel
                 {
                     Number = id.Value,
@@ -104,11 +92,6 @@ namespace AbstractPrinteryView
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             Close();
-        }
-
-        private void comboBoxTypographer_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
