@@ -96,11 +96,5 @@ namespace AbstractPrinteryView
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void FormMaterial_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }
