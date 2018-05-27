@@ -1,4 +1,5 @@
-﻿using PrinterySVC.BindingModel;
+﻿using AbstractPrinteryRestApi.Services;
+using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,18 @@ namespace AbstractPrinteryRestApi.Controllers
         public void PutMaterialOnRack(RackMaterialBindingModel model)
         {
             _service.PutMaterialOnRack(model);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetInfo()
+        {
+            ReflectionService service = new ReflectionService();
+            var list = service.GetInfoByAssembly();
+            if (list == null)
+            {
+                InternalServerError(new Exception("Нет данных"));
+            }
+            return Ok(list);
         }
 
     }
