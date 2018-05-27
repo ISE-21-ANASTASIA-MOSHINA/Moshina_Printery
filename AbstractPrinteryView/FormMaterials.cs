@@ -99,10 +99,5 @@ namespace AbstractPrinteryView
         {
             LoadData();
         }
-
-        private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
     }
 }
