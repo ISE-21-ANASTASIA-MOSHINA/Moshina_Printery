@@ -101,10 +101,5 @@ namespace AbstractPrinteryView
         {
             Close();
         }
-
-        private void textBoxMail_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
