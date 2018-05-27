@@ -63,8 +63,6 @@ namespace AbstractPrinteryView
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-
-
         }
 
 
@@ -97,10 +95,5 @@ namespace AbstractPrinteryView
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-
-        private void reportViewer_Load(object sender, EventArgs e)
-        {
-
-        }
     } 
 }
