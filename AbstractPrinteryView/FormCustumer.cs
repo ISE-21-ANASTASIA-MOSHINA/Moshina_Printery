@@ -91,12 +91,6 @@ namespace AbstractPrinteryView
             DialogResult = DialogResult.Cancel;
             Close();
         }
-
-        private void textBoxFIO_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void labelFIO_Click(object sender, EventArgs e)
         {
 
