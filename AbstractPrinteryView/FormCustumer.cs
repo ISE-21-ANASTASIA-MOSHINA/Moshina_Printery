@@ -3,6 +3,7 @@ using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -25,8 +26,13 @@ namespace AbstractPrinteryView
             {
                 try
                 { 
-                var customer = Task.Run(() => APIClient.GetRequestData<CustomerVievModel>("api/Customer/Get/" + id.Value)).Result;
-                textBoxFIO.Text = customer.CustomerFIO;
+                    var customer = Task.Run(() => APIClient.GetRequestData<CustomerVievModel>("api/Customer/Get/" + id.Value)).Result;
+                    textBoxFIO.Text = customer.CustomerFIO;
+                    textBoxMail.Text = customer.Mail;
+                    dataGridView.DataSource = customer.Messages;
+                    dataGridView.Columns[0].Visible = false;
+                    dataGridView.Columns[1].Visible = false;
+                    dataGridView.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
                 catch (Exception ex)
                 {
@@ -47,20 +53,32 @@ namespace AbstractPrinteryView
                 return;
             }
             string fio = textBoxFIO.Text;
+            string mail = textBoxMail.Text;
+            if (!string.IsNullOrEmpty(mail))
+            {
+                if (!Regex.IsMatch(mail, @"^(?("")(""[^""]+?""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
+                @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9]{2,17}))$"))
+                {
+                    MessageBox.Show("Неверный формат для электронной почты", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
             Task task;
             if (id.HasValue)
             {
                 task = Task.Run(() => APIClient.PostRequestData("api/Customer/UpdElement", new CustomerBindingModel
                 {
                     Number = id.Value,
-                    CustomerFIO = fio
+                    CustomerFIO = fio,
+                    Mail = mail
                 }));
             }
             else
             {
                 task = Task.Run(() => APIClient.PostRequestData("api/Customer/AddElement", new CustomerBindingModel
                 {
-                    CustomerFIO = fio
+                    CustomerFIO = fio,
+                    Mail = mail
                 }));
             }
 
@@ -82,6 +100,11 @@ namespace AbstractPrinteryView
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void textBoxMail_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

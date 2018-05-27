@@ -197,5 +197,12 @@ namespace AbstractPrinteryView
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
+
+        private void emailToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MailCustomer.Connect();
+            var form = new FormMails();
+            form.ShowDialog();
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace AbstractPrinteryView
                 if (listP != null)
                 {
                     comboBoxEdition.DisplayMember = "EditionName";
-                    comboBoxEdition.ValueMember = "Id";
+                    comboBoxEdition.ValueMember = "Number";
                     comboBoxEdition.DataSource = listP;
                     comboBoxEdition.SelectedItem = null;
                 }

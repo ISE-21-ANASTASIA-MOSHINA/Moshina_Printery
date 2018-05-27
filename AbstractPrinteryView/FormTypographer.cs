@@ -23,7 +23,7 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    var typographer = Task.Run(() => APIClient.GetRequestData<TypographerViewModel>("api/Typographer/Get/" + id.Value)).Result;
+                    var typographer = Task.Run(() => APIClient.GetRequestData<TypographerViewModel>("api/Typographer/Get" + id.Value)).Result;
                     textBoxFIO.Text = typographer.TypographerFIO;
                 }
                 catch (Exception ex)
