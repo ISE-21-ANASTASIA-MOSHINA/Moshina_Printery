@@ -84,11 +84,6 @@ namespace AbstractPrinteryView
             LoadData();
         }
 
-        private void отчетыToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void прайсИзделийToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog
