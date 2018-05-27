@@ -87,10 +87,5 @@ namespace AbstractPrinteryView
 
             Close();
         }
-
-        private void FormMaterial_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }
