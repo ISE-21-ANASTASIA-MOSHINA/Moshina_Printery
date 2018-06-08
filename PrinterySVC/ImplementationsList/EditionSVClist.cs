@@ -70,11 +70,6 @@ namespace PrinterySVC.ImplementationsList
             }
             throw new Exception("Элемент не найден");
         }
-
-      
-
-     
-
         public void DelElement(int id)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
