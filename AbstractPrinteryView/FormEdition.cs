@@ -176,7 +176,7 @@ namespace AbstractPrinteryView
                 }
                 else
                 {
-                    service.AddElement(new EdiitionBindingModel
+                    service.AddElement(new EdiitionViewModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxPrice.Text),
