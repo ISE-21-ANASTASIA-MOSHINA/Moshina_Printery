@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PrinterySVC.BindingModel
 {
-    public class EditionBindingModel
+     public class EditionBindingModel
     {
         public int Number { get; set; }
 
@@ -14,6 +14,6 @@ namespace PrinterySVC.BindingModel
 
         public decimal Coast { get; set; }
 
-        public List<EditionMaterialBindingModel> EditionMaterials { get; set; }
-    }
+        public List<EditionMaterialBindingModel> EditionMaterials { get; set; }  
+     }
 }
