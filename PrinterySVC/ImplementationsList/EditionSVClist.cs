@@ -70,8 +70,21 @@ namespace PrinterySVC.ImplementationsList
             }
             throw new Exception("Элемент не найден");
         }
-
-        public void AddElement(EditionBindingModel model)
+        public void DelElement(int id)
+        {
+            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
+            {
+                // удаяем записи по компонентам при удалении изделия
+                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
+                source.Editions.Remove(element);
+            }
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
+        }
+        public void AddElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
             if (element != null)
@@ -109,7 +122,7 @@ namespace PrinterySVC.ImplementationsList
             }
         }
 
-        public void UpElement(EditionBindingModel model)
+        public void UpElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec =>
                                         rec.EditionName == model.EditionName && rec.Number != model.Number);
@@ -167,46 +180,6 @@ namespace PrinterySVC.ImplementationsList
                     });
                 }
             }
-        }
-
-        public void DelElement(int id)
-        {
-            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
-            if (element != null)
-            {
-                // удаяем записи по компонентам при удалении изделия
-                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
-                source.Editions.Remove(element);
-            }
-            else
-            {
-                throw new Exception("Элемент не найден");
-            }
-        }
-
-        List<EditionViewModel> IEditionSVC.GetList()
-        {
-            throw new NotImplementedException();
-        }
-
-        EditionViewModel IEditionSVC.GetElement(int number)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.AddElement(EdiitionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.UpElement(EdiitionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.DelElement(int number)
-        {
-            throw new NotImplementedException();
         }
     }
 }
