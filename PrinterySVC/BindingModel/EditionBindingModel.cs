@@ -8,12 +8,12 @@ namespace PrinterySVC.BindingModel
 {
     public class EditionBindingModel
     {
-         public int Number { get; set; }
+        public int Number { get; set; }
 
-         public string EditionName { get; set; }
+        public string EditionName { get; set; }
 
-         public decimal Coast { get; set; }
+        public decimal Coast { get; set; }
 
-         public List<EditionMaterialBindingModel> EditionMaterials { get; set; }  
+        public List<EditionMaterialBindingModel> EditionMaterials { get; set; }  
      }
 }
