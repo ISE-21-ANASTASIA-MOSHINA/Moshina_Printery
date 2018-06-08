@@ -166,7 +166,7 @@ namespace AbstractPrinteryView
                 }
                 if (id.HasValue)
                 {
-                    service.UpElement(new EdiitionBindingModel
+                    service.UpElement(new EdiitionViewModel
                     {
                         Number= id.Value,
                         EditionName = textBoxName.Text,
