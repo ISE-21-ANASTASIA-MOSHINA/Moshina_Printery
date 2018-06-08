@@ -72,19 +72,9 @@ namespace AbstractPrinteryView
             }
         }
 
-        private void buttonDel_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonRef_Click(object sender, EventArgs e)
         {
             LoadData();
-        }
-
-        private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
         }
     }
 }
