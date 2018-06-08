@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PrinterySVC.BindingModel
 {
-    public class EditionBindingModel
+    public class EdiitionBindingModel
     {
         public int Number { get; set; }
 
