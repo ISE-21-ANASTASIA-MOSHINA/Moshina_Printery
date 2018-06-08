@@ -84,7 +84,6 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
         }
-
         public void AddElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
