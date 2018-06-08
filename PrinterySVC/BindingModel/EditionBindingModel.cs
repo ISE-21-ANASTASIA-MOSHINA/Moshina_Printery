@@ -15,5 +15,5 @@ namespace PrinterySVC.BindingModel
         public decimal Coast { get; set; }
 
         public List<EditionMaterialBindingModel> EditionMaterials { get; set; }  
-     }
+    }
 }
