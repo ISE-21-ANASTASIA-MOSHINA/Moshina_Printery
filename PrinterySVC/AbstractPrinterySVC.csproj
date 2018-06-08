@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DFF4D098-56B1-4F94-89D4-54EFD283A1D8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PrinterySVC</RootNamespace>
+    <AssemblyName>PrinterySVC</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AbstractDbContext.cs" />
+    <Compile Include="BindingModel\BookingBindingModel.cs" />
+    <Compile Include="BindingModel\CustomerBindingModel.cs" />
+    <Compile Include="BindingModel\EditionBindingModel.cs" />
+    <Compile Include="EditionBindingModel.cs" />
+    <Compile Include="BindingModel\EditionMaterialBindingModel.cs" />
+    <Compile Include="BindingModel\MaterialBindingModel.cs" />
+    <Compile Include="BindingModel\RackBindingModel.cs" />
+    <Compile Include="BindingModel\RackMaterialBindingModel.cs" />
+    <Compile Include="BindingModel\TypographerBildingModel.cs" />
+    <Compile Include="ImplementationsBD\CustomerSVCBD.cs" />
+    <Compile Include="ImplementationsBD\EditionSVCBD.cs" />
+    <Compile Include="ImplementationsBD\MainSVCBD.cs" />
+    <Compile Include="ImplementationsBD\MaterialSVCBD.cs" />
+    <Compile Include="ImplementationsBD\RackSVCBD.cs" />
+    <Compile Include="ImplementationsBD\TypographerSVCBD.cs" />
+    <Compile Include="ImplementationsList\CustomerSVClist.cs" />
+    <Compile Include="ImplementationsList\EditionSVClist.cs" />
+    <Compile Include="ImplementationsList\MainSVClist.cs" />
+    <Compile Include="ImplementationsList\MaterialSVClist.cs" />
+    <Compile Include="ImplementationsList\RackSVClist.cs" />
+    <Compile Include="ImplementationsList\TypographerSVClist.cs" />
+    <Compile Include="Inteface\ICustomerSVC.cs" />
+    <Compile Include="Inteface\IEditionSVC.cs" />
+    <Compile Include="Inteface\IMainSVC.cs" />
+    <Compile Include="Inteface\IMaterialSVC.cs" />
+    <Compile Include="Inteface\IRackSVC.cs" />
+    <Compile Include="Inteface\ITypographerSVC.cs" />
+    <Compile Include="Migrations\201806080906086_FirstMigration.cs" />
+    <Compile Include="Migrations\201806080906086_FirstMigration.Designer.cs">
+      <DependentUpon>201806080906086_FirstMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SingletonDataList.cs" />
+    <Compile Include="ViewModel\BookingViewModel.cs" />
+    <Compile Include="ViewModel\CustomerVievModel.cs" />
+    <Compile Include="ViewModel\EditionMaterialViewModel.cs" />
+    <Compile Include="ViewModel\EditionViewModel.cs" />
+    <Compile Include="ViewModel\MaterialViewModel.cs" />
+    <Compile Include="ViewModel\RackMaterialViewModel.cs" />
+    <Compile Include="ViewModel\RackViewModel.cs" />
+    <Compile Include="ViewModel\TypographerViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PrinteryModel\AbstractPrinteryModel.csproj">
+      <Project>{cd5613b7-4de6-43e3-b6ee-7aae5b519d7b}</Project>
+      <Name>AbstractPrinteryModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201806080906086_FirstMigration.resx">
+      <DependentUpon>201806080906086_FirstMigration.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
