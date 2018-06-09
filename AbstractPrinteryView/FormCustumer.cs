@@ -91,9 +91,5 @@ namespace AbstractPrinteryView
             DialogResult = DialogResult.Cancel;
             Close();
         }
-        private void labelFIO_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
