@@ -1,27 +1,27 @@
-﻿using System;
+﻿using AbstractPrinteryModel;
+using PrinterySVC.BindingModel;
+using PrinterySVC.Inteface;
+using PrinterySVC.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AbstractPrinteryModel;
-using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
-using PrinterySVC.ViewModel;
 
-namespace PrinterySVC.ImplementationsList
+namespace PrinterySVC.ImplementationsDB
 {
-    public class MaterialSVClist : IMaterialSVC
+    public class MaterialSVCDB : IMaterialSVC
     {
-        private SingletonDataList source;
+        private AbstractDbContext context;
 
-        public MaterialSVClist()
+        public MaterialSVCDB(AbstractDbContext context)
         {
-            source = SingletonDataList.GetInstance();
+            this.context = context;
         }
 
         public List<MaterialViewModel> GetList()
         {
-            List<MaterialViewModel> result = source.Materials
+            List<MaterialViewModel> result = context.Materials
                 .Select(rec => new MaterialViewModel
                 {
                     Number = rec.Number,
@@ -33,7 +33,7 @@ namespace PrinterySVC.ImplementationsList
 
         public MaterialViewModel GetElement(int id)
         {
-            Material element = source.Materials.FirstOrDefault(rec => rec.Number == id);
+            Material element = context.Materials.FirstOrDefault(rec => rec.Number == id);
             if (element != null)
             {
                 return new MaterialViewModel
@@ -47,41 +47,42 @@ namespace PrinterySVC.ImplementationsList
 
         public void AddElement(MaterialBindingModel model)
         {
-            Material element = source.Materials.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
+            Material element = context.Materials.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
             if (element != null)
             {
                 throw new Exception("Уже есть компонент с таким названием");
             }
-            int maxNumber = source.Materials.Count > 0 ? source.Materials.Max(rec => rec.Number) : 0;
-            source.Materials.Add(new Material
+            context.Materials.Add(new Material
             {
-                Number = maxNumber + 1,
                 MaterialName = model.MaterialName
             });
+            context.SaveChanges();
         }
 
         public void UpElement(MaterialBindingModel model)
         {
-            Material element = source.Materials.FirstOrDefault(rec =>
+            Material element = context.Materials.FirstOrDefault(rec =>
                                         rec.MaterialName == model.MaterialName && rec.Number != model.Number);
             if (element != null)
             {
-                throw new Exception("Уже есть компонент с таким названием");
+                throw new Exception("Уже есть материал с таким названием");
             }
-            element = source.Materials.FirstOrDefault(rec => rec.Number == model.Number);
+            element = context.Materials.FirstOrDefault(rec => rec.Number == model.Number);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             element.MaterialName = model.MaterialName;
+            context.SaveChanges();
         }
 
         public void DelElement(int id)
         {
-            Material element = source.Materials.FirstOrDefault(rec => rec.Number == id);
+            Material element = context.Materials.FirstOrDefault(rec => rec.Number == id);
             if (element != null)
             {
-                source.Materials.Remove(element);
+                context.Materials.Remove(element);
+                context.SaveChanges();
             }
             else
             {
