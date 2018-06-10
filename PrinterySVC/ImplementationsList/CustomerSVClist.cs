@@ -21,14 +21,6 @@ namespace PrinterySVC.ImplementationsList
 
         public List<CustomerVievModel> GetList()
         {
-            List<CustomerVievModel> result = new List<CustomerVievModel>();
-            for (int i = 0; i < source.Customers.Count; ++i)
-            {
-                result.Add(new CustomerVievModel
-                {
-                    Number = source.Customers[i].Number,
-                    CustomerFIO = source.Customers[i].CustomerFIO
-                });
             }
             return result;
         }
