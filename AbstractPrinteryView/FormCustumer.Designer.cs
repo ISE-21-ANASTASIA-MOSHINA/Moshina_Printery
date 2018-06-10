@@ -54,7 +54,6 @@ namespace AbstractPrinteryView
             this.textBoxFIO.Name = "textBoxFIO";
             this.textBoxFIO.Size = new System.Drawing.Size(288, 22);
             this.textBoxFIO.TabIndex = 2;
-            this.textBoxFIO.TextChanged += new System.EventHandler(this.textBoxFIO_TextChanged);
             // 
             // buttonSave
             // 
