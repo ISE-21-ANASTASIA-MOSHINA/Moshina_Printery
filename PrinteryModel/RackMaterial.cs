@@ -8,6 +8,7 @@ namespace PrinteryModel
 {
     public class RackMaterial // сколько материала на складе
     {
+        [Key]
         public int Namber { get; set; }
         public int RackNamber { get; set; }
         public int MaterialNamber { get; set; }
