@@ -59,9 +59,6 @@ namespace AbstractPrinteryView
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-
-
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
