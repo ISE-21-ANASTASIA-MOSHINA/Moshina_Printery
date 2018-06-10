@@ -183,30 +183,5 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
         }
-
-        List<EditionViewModel> IEditionSVC.GetList()
-        {
-            throw new NotImplementedException();
-        }
-
-        EditionViewModel IEditionSVC.GetElement(int number)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.AddElement(EdiitionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.UpElement(EdiitionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.DelElement(int number)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
