@@ -27,16 +27,6 @@ namespace PrinterySVC.ImplementationsList
 
         public void AddElement(CustomerBindingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Customers.Count; ++i)
-            {
-                if (source.Customers[i].Number > maxNumber)
-                {
-                    maxNumber = source.Customers[i].Number;
-                }
-                if (source.Customers[i].CustomerFIO == model.CustomerFIO)
-                {
-                    throw new Exception("Уже есть клиент с таким ФИО");
                 }
             }
             source.Customers.Add(new Customer
