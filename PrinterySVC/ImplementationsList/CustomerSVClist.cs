@@ -27,7 +27,7 @@ namespace PrinterySVC.ImplementationsList
 
         public void UpElement(CustomerBindingModel model)
         {
-                        int index = -1;
+            int index = -1;
             for (int i = 0; i < source.Customers.Count; ++i)
             {
                 if (source.Customers[i].Number == model.Number)
