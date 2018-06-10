@@ -1,18 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Unity;
+using Unity.Attributes;
+using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using PrinterySVC.BindingModel;
-using System.Threading.Tasks;
 
 namespace AbstractPrinteryView
 {
     public partial class FormPutOnRack : Form
     {
+        [Dependency]
+        public new IUnityContainer Container { get; set; }
 
-        public FormPutOnRack()
+        private readonly IRackSVC serviceS;
+
+        private readonly IMaterialSVC serviceC;
+
+        private readonly IMainSVC serviceM;
+
+        public FormPutOnRack(IRackSVC serviceS, IMaterialSVC serviceC, IMainSVC serviceM)
         {
             InitializeComponent();
+            this.serviceS = serviceS;
+            this.serviceC = serviceC;
+            this.serviceM = serviceM;
         }
 
         private void FormPutOnRack_Load(object sender, EventArgs e)
@@ -20,7 +38,7 @@ namespace AbstractPrinteryView
 
             try
             {
-                List<MaterialViewModel> listC = Task.Run(() => APIClient.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                List<MaterialViewModel> listC = serviceC.GetList();
                 if (listC != null)
                 {
                     comboBoxMaterial.DisplayMember = "MaterialName";
@@ -28,8 +46,7 @@ namespace AbstractPrinteryView
                     comboBoxMaterial.DataSource = listC;
                     comboBoxMaterial.SelectedItem = null;
                 }
-
-                List<RackViewModel> listS = Task.Run(() => APIClient.GetRequestData<List<RackViewModel>>("api/Rack/GetList")).Result;
+                List<RackViewModel> listS = serviceS.GetList();
                 if (listS != null)
                 {
                     comboBoxRack.DisplayMember = "RackName";
@@ -40,12 +57,11 @@ namespace AbstractPrinteryView
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
-                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+
+
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -67,42 +83,25 @@ namespace AbstractPrinteryView
             }
             try
             {
-                int materialId = Convert.ToInt32(comboBoxMaterial.SelectedValue);
-                int rackId = Convert.ToInt32(comboBoxRack.SelectedValue);
-                int count = Convert.ToInt32(textBoxCount.Text);
-                Task task = Task.Run(() => APIClient.PostRequestData("api/Main/PutMaterialOnRack", new RackMaterialBindingModel
+                serviceM.PutMaterialOnRack(new RackMaterialBindingModel
                 {
-                    MaterialNamber = materialId,
-                    RackNamber = rackId,
-                    Count = count
-                }));
-
-                task.ContinueWith((prevTask) => MessageBox.Show("Склад пополнен", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
-                    TaskContinuationOptions.OnlyOnRanToCompletion);
-                task.ContinueWith((prevTask) =>
-                {
-                    var ex = (Exception)prevTask.Exception;
-                    while (ex.InnerException != null)
-                    {
-                        ex = ex.InnerException;
-                    }
-                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }, TaskContinuationOptions.OnlyOnFaulted);
-
+                    MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
+                    RackNamber = Convert.ToInt32(comboBoxRack.SelectedValue),
+                    Count = Convert.ToInt32(textBoxCount.Text)
+                });
+                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.OK;
                 Close();
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
-                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
+            DialogResult = DialogResult.Cancel;
             Close();
         }
 

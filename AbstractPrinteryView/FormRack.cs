@@ -1,22 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Unity;
+using Unity.Attributes;
+using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using PrinterySVC.BindingModel;
-using System.Net.Http;
 
 namespace AbstractPrinteryView
 {
     public partial class FormRack : Form
     {
+        [Dependency]
+        public new IUnityContainer Container { get; set; }
 
         public int Number { set { id = value; } }
 
+        private readonly IRackSVC service;
+
         private int? id;
 
-        public FormRack()
+        public FormRack(IRackSVC service)
         {
             InitializeComponent();
+            this.service = service;
         }
 
         private void FormRack_Load(object sender, EventArgs e)
@@ -25,20 +37,19 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    var rack = Task.Run(() => APIClient.GetRequestData<RackViewModel>("api/Rack/Get/" + id.Value)).Result;
-                    textBoxName.Text = rack.RackName;
-                    dataGridView.DataSource = rack.RackMaterial;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].Visible = false;
-                    dataGridView.Columns[2].Visible = false;
-                    dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    RackViewModel view = service.GetElement(id.Value);
+                    if (view != null)
+                    {
+                        textBoxName.Text = view.RackName;
+                        dataGridView.DataSource = view.RackMaterial;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].Visible = false;
+                        dataGridView.Columns[2].Visible = false;
+                        dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    while (ex.InnerException != null)
-                    {
-                        ex = ex.InnerException;
-                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -51,37 +62,31 @@ namespace AbstractPrinteryView
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            string name = textBoxName.Text;
-            Task task;
-            if (id.HasValue)
+            try
             {
-                task = Task.Run(() => APIClient.PostRequestData("api/Rack/UpdElement", new RackBindingModel
+                if (id.HasValue)
                 {
-                    Number = id.Value,
-                    RackName = name
-                }));
-            }
-            else
-            {
-                task = Task.Run(() => APIClient.PostRequestData("api/Rack/AddElement", new RackBindingModel
-                {
-                    RackName = name
-                }));
-            }
-
-            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
-                TaskContinuationOptions.OnlyOnRanToCompletion);
-            task.ContinueWith((prevTask) =>
-            {
-                var ex = (Exception)prevTask.Exception;
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
+                    service.UpElement(new RackBindingModel
+                    {
+                        Number = id.Value,
+                        RackName = textBoxName.Text
+                    });
                 }
+                else
+                {
+                    service.AddElement(new RackBindingModel
+                    {
+                        RackName = textBoxName.Text
+                    });
+                }
+                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }, TaskContinuationOptions.OnlyOnFaulted);
-
-            Close();
+            }
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

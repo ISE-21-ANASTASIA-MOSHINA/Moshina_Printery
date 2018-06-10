@@ -1,4 +1,4 @@
-﻿using AbstractPrinteryModel;
+﻿using PrinteryModel;
 using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
@@ -71,7 +71,26 @@ namespace PrinterySVC.ImplementationsList
             throw new Exception("Элемент не найден");
         }
 
-        public void AddElement(EditionBindingModel model)
+      
+
+     
+
+        public void DelElement(int id)
+        {
+            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
+            {
+                // удаяем записи по компонентам при удалении изделия
+                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
+                source.Editions.Remove(element);
+            }
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
+        }
+
+        public void AddElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
             if (element != null)
@@ -83,7 +102,7 @@ namespace PrinterySVC.ImplementationsList
             {
                 Number = maxNumber + 1,
                 EditionName = model.EditionName,
-                CostEdition = model.Price
+                CostEdition = model.Coast
             });
             // компоненты для изделия
             int maxPCNumber = source.EditionMaterials.Count > 0 ?
@@ -109,7 +128,7 @@ namespace PrinterySVC.ImplementationsList
             }
         }
 
-        public void UpElement(EditionBindingModel model)
+        public void UpElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec =>
                                         rec.EditionName == model.EditionName && rec.Number != model.Number);
@@ -123,7 +142,7 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
             element.EditionName = model.EditionName;
-            element.CostEdition = model.Price;
+            element.CostEdition = model.Coast;
 
             int maxPCNumber = source.EditionMaterials.Count > 0 ? source.EditionMaterials.Max(rec => rec.Number) : 0;
             // обновляем существуюущие компоненты
@@ -167,46 +186,6 @@ namespace PrinterySVC.ImplementationsList
                     });
                 }
             }
-        }
-
-        public void DelElement(int id)
-        {
-            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
-            if (element != null)
-            {
-                // удаяем записи по компонентам при удалении изделия
-                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
-                source.Editions.Remove(element);
-            }
-            else
-            {
-                throw new Exception("Элемент не найден");
-            }
-        }
-
-        List<EditionViewModel> IEditionSVC.GetList()
-        {
-            throw new NotImplementedException();
-        }
-
-        EditionViewModel IEditionSVC.GetElement(int number)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.AddElement(EditionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.UpElement(EditionBindingModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IEditionSVC.DelElement(int number)
-        {
-            throw new NotImplementedException();
         }
     }
 }

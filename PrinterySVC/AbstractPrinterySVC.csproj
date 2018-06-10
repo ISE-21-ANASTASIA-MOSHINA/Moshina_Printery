@@ -30,30 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="itextsharp, Version=5.5.13.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
-      <HintPath>..\packages\iTextSharp.5.5.13\lib\itextsharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
-      <Private>True</Private>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Word, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Office.Interop.Word.15.0.4797.1003\lib\net20\Microsoft.Office.Interop.Word.dll</HintPath>
-      <Private>True</Private>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -62,27 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractDbContext.cs" />
-    <Compile Include="Attributies\CustomInterfaceAttribute.cs" />
-    <Compile Include="Attributies\CustomMethodAttribute.cs" />
     <Compile Include="BindingModel\BookingBindingModel.cs" />
     <Compile Include="BindingModel\CustomerBindingModel.cs" />
     <Compile Include="BindingModel\EditionBindingModel.cs" />
-    <Compile Include="BindingModel\MessageInfoBindingModel.cs" />
-    <Compile Include="BindingModel\ReportBindingModel.cs" />
+    <Compile Include="EditionBindingModel.cs" />
     <Compile Include="BindingModel\EditionMaterialBindingModel.cs" />
     <Compile Include="BindingModel\MaterialBindingModel.cs" />
     <Compile Include="BindingModel\RackBindingModel.cs" />
     <Compile Include="BindingModel\RackMaterialBindingModel.cs" />
     <Compile Include="BindingModel\TypographerBildingModel.cs" />
-    <Compile Include="ImplementationsDB\CustomerSVCDB.cs" />
-    <Compile Include="ImplementationsDB\EditionSVCDB.cs" />
-    <Compile Include="ImplementationsDB\MainSVCDB.cs" />
-    <Compile Include="ImplementationsDB\MaterialSVCDB.cs" />
-    <Compile Include="ImplementationsDB\MessageInfoSVCBD.cs" />
-    <Compile Include="ImplementationsDB\RackSVCDB.cs" />
-    <Compile Include="ImplementationsDB\ReportSVCBD.cs" />
-    <Compile Include="ImplementationsDB\TypographerSVCDB.cs" />
     <Compile Include="ImplementationsList\CustomerSVClist.cs" />
     <Compile Include="ImplementationsList\EditionSVClist.cs" />
     <Compile Include="ImplementationsList\MainSVClist.cs" />
@@ -93,44 +59,16 @@
     <Compile Include="Inteface\IEditionSVC.cs" />
     <Compile Include="Inteface\IMainSVC.cs" />
     <Compile Include="Inteface\IMaterialSVC.cs" />
-    <Compile Include="Inteface\IMessageInfoSVC.cs" />
     <Compile Include="Inteface\IRackSVC.cs" />
-    <Compile Include="Inteface\IReportSVC.cs" />
     <Compile Include="Inteface\ITypographerSVC.cs" />
-    <Compile Include="Migrations\201803310744128_InitialCreate.cs" />
-    <Compile Include="Migrations\201803310744128_InitialCreate.Designer.cs">
-      <DependentUpon>201803310744128_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201803310745471_FirstMigration.cs" />
-    <Compile Include="Migrations\201803310745471_FirstMigration.Designer.cs">
-      <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201805251758147_AddFieldInCustomer.cs" />
-    <Compile Include="Migrations\201805251758147_AddFieldInCustomer.Designer.cs">
-      <DependentUpon>201805251758147_AddFieldInCustomer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201805251911598_AddTableMessageInfo.cs" />
-    <Compile Include="Migrations\201805251911598_AddTableMessageInfo.Designer.cs">
-      <DependentUpon>201805251911598_AddTableMessageInfo.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="SingletonDataList.cs" />
     <Compile Include="ViewModel\BookingViewModel.cs" />
-    <Compile Include="ViewModel\CustomerBookcingsModel.cs" />
     <Compile Include="ViewModel\CustomerVievModel.cs" />
     <Compile Include="ViewModel\EditionMaterialViewModel.cs" />
     <Compile Include="ViewModel\EditionViewModel.cs" />
-    <Compile Include="ViewModel\HttpErrorMessage.cs" />
     <Compile Include="ViewModel\MaterialViewModel.cs" />
-    <Compile Include="ViewModel\MessageInfoViewModel.cs" />
     <Compile Include="ViewModel\RackMaterialViewModel.cs" />
-    <Compile Include="ViewModel\RacksLoadViewModel.cs" />
     <Compile Include="ViewModel\RackViewModel.cs" />
     <Compile Include="ViewModel\TypographerViewModel.cs" />
   </ItemGroup>
@@ -140,30 +78,6 @@
       <Name>AbstractPrinteryModel</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
-    <None Include="Resources\TIMCYR.TTF" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201803310744128_InitialCreate.resx">
-      <DependentUpon>201803310744128_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201803310745471_FirstMigration.resx">
-      <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201805251758147_AddFieldInCustomer.resx">
-      <DependentUpon>201805251758147_AddFieldInCustomer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201805251911598_AddTableMessageInfo.resx">
-      <DependentUpon>201805251911598_AddTableMessageInfo.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

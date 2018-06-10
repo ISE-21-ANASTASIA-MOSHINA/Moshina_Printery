@@ -1,18 +1,29 @@
-﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
+﻿using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Unity;
+using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormRacks : Form
     {
-        public FormRacks()
+        [Dependency]
+        public new IUnityContainer Container { get; set; }
+
+        private readonly IRackSVC service;
+
+        public FormRacks(IRackSVC service)
         {
             InitializeComponent();
+            this.service = service;
         }
 
         private void FormRacks_Load(object sender, EventArgs e)
@@ -24,7 +35,7 @@ namespace AbstractPrinteryView
         {
             try
             {
-                List<RackViewModel> list = Task.Run(() => APIClient.GetRequestData<List<RackViewModel>>("api/Rack/GetList")).Result;
+                List<RackViewModel> list = service.GetList();
                 if (list != null)
                 {
                     dataGridView.DataSource = list;
@@ -34,29 +45,29 @@ namespace AbstractPrinteryView
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
-                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = new FormRack();
-            form.ShowDialog();
+            var form = Container.Resolve<FormRack>();
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                LoadData();
+            }
         }
 
         private void buttonUpd_Click(object sender, EventArgs e)
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = new FormRack
+                var form = Container.Resolve<FormRack>();
+                form.Number = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
+                if (form.ShowDialog() == DialogResult.OK)
                 {
-                    Number= Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value)
-                };
-                form.ShowDialog();
+                    LoadData();
+                }
             }
         }
 
@@ -67,20 +78,15 @@ namespace AbstractPrinteryView
                 if (MessageBox.Show("Удалить запись", "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
-                    Task task = Task.Run(() => APIClient.PostRequestData("api/Rack/DelElement", new CustomerBindingModel { Number = id }));
-
-                    task.ContinueWith((prevTask) => MessageBox.Show("Запись удалена. Обновите список", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information),
-                    TaskContinuationOptions.OnlyOnRanToCompletion);
-
-                    task.ContinueWith((prevTask) =>
+                    try
                     {
-                        var ex = (Exception)prevTask.Exception;
-                        while (ex.InnerException != null)
-                        {
-                            ex = ex.InnerException;
-                        }
+                        service.DelElement(id);
+                    }
+                    catch (Exception ex)
+                    {
                         MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }, TaskContinuationOptions.OnlyOnFaulted);
+                    }
+                    LoadData();
                 }
             }
         }

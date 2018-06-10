@@ -1,4 +1,4 @@
-﻿using AbstractPrinteryModel;
+﻿using PrinteryModel;
 using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
@@ -71,7 +71,7 @@ namespace PrinterySVC.ImplementationsList
             foreach (var productMaterial in productMaterials)
             {
                 int countOnRacks = source.RackMaterials
-                                            .Where(rec => rec.MaterialNamber == productMaterial.MaterialNamber)
+                                            .Where(rec => rec.MaterialNumber == productMaterial.MaterialNamber)
                                             .Sum(rec => rec.Count);
                 if (countOnRacks < productMaterial.Count * element.Count)
                 {

@@ -3,24 +3,42 @@ using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Unity;
+using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormCreateEdition : Form
     {
 
-        public FormCreateEdition()
+        [Dependency]
+        public new IUnityContainer Container { get; set; }
+
+        private readonly ICustomerSVC serviceC;
+
+        private readonly IEditionSVC serviceE;
+
+        private readonly IMainSVC serviceM;
+
+        public FormCreateEdition(ICustomerSVC serviceC, IEditionSVC serviceE, IMainSVC serviceM)
         {
             InitializeComponent();
+            this.serviceC = serviceC;
+            this.serviceE = serviceE;
+            this.serviceM = serviceM;
         }
 
         private void FormCreateOrder_Load(object sender, EventArgs e)
         {
             try
             {
-                List<CustomerVievModel> listC = Task.Run(() => APIClient.GetRequestData<List<CustomerVievModel>>("api/Customer/GetList")).Result;
+                List<CustomerVievModel> listC = serviceC.GetList();
                 if (listC != null)
                 {
                     comboBoxCustomer.DisplayMember = "CustomerFIO";
@@ -28,8 +46,7 @@ namespace AbstractPrinteryView
                     comboBoxCustomer.DataSource = listC;
                     comboBoxCustomer.SelectedItem = null;
                 }
-
-                List<EditionViewModel> listP = Task.Run(() => APIClient.GetRequestData<List<EditionViewModel>>("api/Edition/GetList")).Result;
+                List<EditionViewModel> listP = serviceE.GetList();
                 if (listP != null)
                 {
                     comboBoxEdition.DisplayMember = "EditionName";
@@ -38,13 +55,8 @@ namespace AbstractPrinteryView
                     comboBoxEdition.SelectedItem = null;
                 }
             }
-
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
-                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -56,18 +68,13 @@ namespace AbstractPrinteryView
                 try
                 {
                     int id = Convert.ToInt32(comboBoxEdition.SelectedValue);
-                    EditionViewModel edition = Task.Run(() => APIClient.GetRequestData<EditionViewModel>("api/Edition/Get/" + id)).Result;
+                    EditionViewModel edition = serviceE.GetElement(id);
                     int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * (int)edition.Cost).ToString();
+                    textBoxSum.Text = (count * edition.Cost).ToString();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                    while (ex.InnerException != null)
-                    {
-                        ex = ex.InnerException;
-                    }
                 }
             }
         }
@@ -99,35 +106,28 @@ namespace AbstractPrinteryView
                 MessageBox.Show("Выберите изделие", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            int customerId = Convert.ToInt32(comboBoxCustomer.SelectedValue);
-            int editionId = Convert.ToInt32(comboBoxEdition.SelectedValue);
-            int count = Convert.ToInt32(textBoxCount.Text);
-            int sum = Convert.ToInt32(textBoxSum.Text);
-            Task task = Task.Run(() => APIClient.PostRequestData("api/Main/CreateBooking", new BookingBindingModel
+            try
             {
-                CustomerNumber = customerId,
-                EditionNumber = editionId,
-                Count = count,
-                Sum = sum
-            }));
-
-            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
-                TaskContinuationOptions.OnlyOnRanToCompletion);
-            task.ContinueWith((prevTask) =>
-            {
-                var ex = (Exception)prevTask.Exception;
-                while (ex.InnerException != null)
+                serviceM.CreateBooking(new BookingBindingModel
                 {
-                    ex = ex.InnerException;
-                }
+                    CustomerNumber = Convert.ToInt32(comboBoxCustomer.SelectedValue),
+                    EditionNumber = Convert.ToInt32(comboBoxEdition.SelectedValue),
+                    Count = Convert.ToInt32(textBoxCount.Text),
+                    Sum = Convert.ToInt32(textBoxSum.Text)
+                });
+                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }, TaskContinuationOptions.OnlyOnFaulted);
-
-            Close();
+            }
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
+            DialogResult = DialogResult.Cancel;
             Close();
         }
     } 

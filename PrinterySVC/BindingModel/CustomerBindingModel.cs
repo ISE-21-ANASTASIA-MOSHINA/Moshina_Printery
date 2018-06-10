@@ -1,18 +1,15 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace PrinterySVC.BindingModel
 {
-    [DataContract]
-
     public class CustomerBindingModel
     {
-        [DataMember]
         public int Number { get; set; }
 
-        [DataMember]
-        public string Mail { get; set; }
-
-        [DataMember]
         public string CustomerFIO { get; set; }
     }
 }
