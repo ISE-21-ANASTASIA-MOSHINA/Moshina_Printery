@@ -21,10 +21,6 @@ namespace PrinterySVC.ImplementationsList
 
         public List<CustomerVievModel> GetList()
         {
-            }
-            return result;
-        }
-
                 }
             }
             throw new Exception("Элемент не найден");
