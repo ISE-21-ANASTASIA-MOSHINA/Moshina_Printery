@@ -39,6 +39,7 @@ namespace AbstractPrinteryView
             currentContainer.RegisterType<IEditionSVC, EditionSVCDB>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRackSVC, RackSVCDB>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<IMainSVC, MainSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IReportSVC, ReportSVCBD>(new HierarchicalLifetimeManager());
 
             return currentContainer;
 
