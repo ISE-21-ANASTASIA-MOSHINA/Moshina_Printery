@@ -47,7 +47,7 @@ namespace PrinterySVC.ImplementationsList
             source.Customers[index].CustomerFIO = model.CustomerFIO;
         }
 
-        public void DelElement(int number)
+        public void DelElement(int id)
         {
             Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
             if (element != null)
