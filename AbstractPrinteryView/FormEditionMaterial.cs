@@ -1,47 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 using PrinterySVC.ViewModel;
-using PrinterySVC.Inteface;
 
 namespace AbstractPrinteryView
 {
     public partial class FormEditionMaterial : Form
     {
 
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public EditionMaterialViewModel Model { set { model = value; } get { return model; } }
-
-        private readonly IMaterialSVC service;
 
         private EditionMaterialViewModel model;
 
-        public FormEditionMaterial(IMaterialSVC service)
+        public FormEditionMaterial()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormEditionMaterial_Load(object sender, EventArgs e)
         {
             try
             {
-                List<MaterialViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
                     comboBoxMaterial.DisplayMember = "MaterialName";
                     comboBoxMaterial.ValueMember = "Number";
-                    comboBoxMaterial.DataSource = list;
+                    comboBoxMaterial.DataSource = APIClient.GetElement<List<MaterialViewModel>>(response);
                     comboBoxMaterial.SelectedItem = null;
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
