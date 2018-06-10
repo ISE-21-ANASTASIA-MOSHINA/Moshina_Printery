@@ -22,26 +22,6 @@ namespace PrinterySVC.ImplementationsList
         public List<CustomerVievModel> GetList()
         {
            
-            List<CustomerVievModel> result = source.Customers
-                .Select(rec => new CustomerVievModel
-                {
-                    Number = rec.Number,
-                    CustomerFIO = rec.CustomerFIO
-                })
-                .ToList();
-            return result;
-        }
-
-        public CustomerVievModel GetElement(int id)
-        {
-            Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
-            if (element != null)
-            {
-                return new CustomerVievModel
-                {
-                    Number = element.Number,
-                    CustomerFIO = element.CustomerFIO
-                };
             }
             throw new Exception("Элемент не найден");
         }
