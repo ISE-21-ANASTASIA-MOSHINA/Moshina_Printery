@@ -87,5 +87,10 @@ namespace AbstractPrinteryView
             DialogResult = DialogResult.Cancel;
             Close();
         }
+
+        private void comboBoxTypographer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
