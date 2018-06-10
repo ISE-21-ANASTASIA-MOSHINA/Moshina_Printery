@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AbstractPrinteryModel;
+using PrinteryModel;
 using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
@@ -20,6 +20,7 @@ namespace PrinterySVC.ImplementationsList
 
         public List<CustomerVievModel> GetList()
         {
+           
             List<CustomerVievModel> result = source.Customers
                 .Select(rec => new CustomerVievModel
                 {

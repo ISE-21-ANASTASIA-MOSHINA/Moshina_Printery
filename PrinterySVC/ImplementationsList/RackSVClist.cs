@@ -1,4 +1,4 @@
-﻿using AbstractPrinteryModel;
+﻿using PrinteryModel;
 using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;

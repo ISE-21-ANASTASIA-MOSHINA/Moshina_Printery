@@ -1,4 +1,4 @@
-﻿using AbstractPrinteryModel;
+﻿using PrinteryModel;
 using PrinterySVC.BindingModel;
 using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
@@ -70,8 +70,7 @@ namespace PrinterySVC.ImplementationsList
             }
             throw new Exception("Элемент не найден");
         }
-
-        public void AddElement(EditionBindingModel model)
+        public void AddElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
             if (element != null)
@@ -109,7 +108,7 @@ namespace PrinterySVC.ImplementationsList
             }
         }
 
-        public void UpElement(EditionBindingModel model)
+        public void UpElement(EdiitionViewModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec =>
                                         rec.EditionName == model.EditionName && rec.Number != model.Number);
@@ -168,8 +167,7 @@ namespace PrinterySVC.ImplementationsList
                 }
             }
         }
-
-        public void DelElement(int id)
+         public void DelElement(int id)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
             if (element != null)
