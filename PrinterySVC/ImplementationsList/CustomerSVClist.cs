@@ -24,12 +24,6 @@ namespace PrinterySVC.ImplementationsList
             }
             throw new Exception("Элемент не найден");
         }
-            source.Customers.Add(new Customer
-            {
-                Number = maxNumber + 1,
-                CustomerFIO = model.CustomerFIO
-            });
-        }
 
         public void UpElement(CustomerBindingModel model)
         {
