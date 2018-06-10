@@ -100,4 +100,3 @@ namespace AbstractPrinteryView
         private System.Windows.Forms.Button buttonSave;
         private System.Windows.Forms.Button buttonCancel;
     }
-}
