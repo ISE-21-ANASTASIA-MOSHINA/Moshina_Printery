@@ -1,34 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using PrinterySVC.BindingModel;
+using System.Net.Http;
 
 namespace AbstractPrinteryView
 {
     public partial class FormRack : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
         public int Number { set { id = value; } }
 
-        private readonly IRackSVC service;
-
         private int? id;
 
-        public FormRack(IRackSVC service)
+        public FormRack()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormRack_Load(object sender, EventArgs e)
@@ -37,15 +25,20 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    RackViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Rack/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.RackName;
-                        dataGridView.DataSource = view.RackMaterial;
+                        var stock = APIClient.GetElement<RackViewModel>(response);
+                        textBoxName.Text = stock.RackName;
+                        dataGridView.DataSource = stock.RackMaterial;
                         dataGridView.Columns[0].Visible = false;
                         dataGridView.Columns[1].Visible = false;
                         dataGridView.Columns[2].Visible = false;
                         dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
                     }
                 }
                 catch (Exception ex)
@@ -64,9 +57,11 @@ namespace AbstractPrinteryView
             }
             try
             {
+
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpElement(new RackBindingModel
+                    response = APIClient.PostRequest("api/Rack/UpdElement", new RackBindingModel
                     {
                         Number = id.Value,
                         RackName = textBoxName.Text
@@ -74,14 +69,22 @@ namespace AbstractPrinteryView
                 }
                 else
                 {
-                    service.AddElement(new RackBindingModel
+                    response = APIClient.PostRequest("api/Rack/AddElement", new RackBindingModel
                     {
                         RackName = textBoxName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
+
             }
             catch (Exception ex)
             {
