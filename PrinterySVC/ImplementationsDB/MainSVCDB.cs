@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Data.Entity;
+using System.Net.Mail;
+using System.Configuration;
+using System.Net;
 
 namespace PrinterySVC.ImplementationsDB
 {
@@ -48,7 +51,7 @@ namespace PrinterySVC.ImplementationsDB
 
         public void CreateBooking(BookingBindingModel model)
         {
-            context.Bookings.Add(new Booking
+            var booking = new Booking
             {
                 CustomerNumber = model.CustomerNumber,
                 EditionNumber = model.EditionNumber,
@@ -56,8 +59,14 @@ namespace PrinterySVC.ImplementationsDB
                 Count = model.Count,
                 Sum = model.Sum,
                 Status = BookingStatus.Принят
-            });
+            };
+            context.Bookings.Add(booking);
             context.SaveChanges();
+
+            var customer = context.Customers.FirstOrDefault(x => x.Number == model.CustomerNumber);
+            SendEmail(customer.Mail, "Оповещение по заказам",
+                string.Format("Заказ №{0} от {1} создан успешно", booking.Number,
+                booking.DateCreate.ToShortDateString()));
         }
 
         public void TakeBookingInWork(BookingBindingModel model)
@@ -109,6 +118,8 @@ namespace PrinterySVC.ImplementationsDB
                     element.DateTypographer = DateTime.Now;
                     element.Status = BookingStatus.Выполняется;
                     context.SaveChanges();
+                    SendEmail(element.Customer.Mail, "Оповещение по заказам",
+                       string.Format("Заказ №{0} от {1} передеан в работу", element.Number, element.DateCreate.ToShortDateString()));
                     transaction.Commit();
                 }
                 catch (Exception)
@@ -128,6 +139,9 @@ namespace PrinterySVC.ImplementationsDB
             }
             element.Status = BookingStatus.Готов;
             context.SaveChanges();
+            SendEmail(element.Customer.Mail, "Оповещение по заказам",
+               string.Format("Заказ №{0} от {1} передан на оплату", element.Number,
+               element.DateCreate.ToShortDateString()));
         }
 
         public void PayBooking(int id)
@@ -139,6 +153,8 @@ namespace PrinterySVC.ImplementationsDB
             }
             element.Status = BookingStatus.Оплачен;
             context.SaveChanges();
+            SendEmail(element.Customer.Mail, "Оповещение по заказам",
+               string.Format("Заказ №{0} от {1} оплачен успешно", element.Number, element.DateCreate.ToShortDateString()));
         }
 
         public void PutMaterialOnRack(RackMaterialBindingModel model)
@@ -160,6 +176,40 @@ namespace PrinterySVC.ImplementationsDB
                 });
             }
             context.SaveChanges();
+        }
+
+        private void SendEmail(string mailAddress, string subject, string text)
+        {
+            MailMessage objMailMessage = new MailMessage();
+            SmtpClient objSmtpCustomer = null;
+
+            try
+            {
+                objMailMessage.From = new MailAddress(ConfigurationManager.AppSettings["MailLogin"]);
+                objMailMessage.To.Add(new MailAddress(mailAddress));
+                objMailMessage.Subject = subject;
+                objMailMessage.Body = text;
+                objMailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
+                objMailMessage.BodyEncoding = System.Text.Encoding.UTF8;
+
+                objSmtpCustomer = new SmtpClient("smtp.gmail.com", 587);
+                objSmtpCustomer.UseDefaultCredentials = false;
+                objSmtpCustomer.EnableSsl = true;
+                objSmtpCustomer.DeliveryMethod = SmtpDeliveryMethod.Network;
+                objSmtpCustomer.Credentials = new NetworkCredential(ConfigurationManager.AppSettings["MailLogin"],
+                    ConfigurationManager.AppSettings["MailPassword"]);
+
+                objSmtpCustomer.Send(objMailMessage);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                objMailMessage = null;
+                objSmtpCustomer = null;
+            }
         }
     }
 }

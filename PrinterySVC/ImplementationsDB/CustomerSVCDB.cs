@@ -25,7 +25,9 @@ namespace PrinterySVC.ImplementationsDB
                 .Select(rec => new CustomerVievModel
                 {
                     Number = rec.Number,
-                    CustomerFIO = rec.CustomerFIO
+                    Mail = rec.Mail,
+                    CustomerFIO = rec.CustomerFIO,
+                   
                 })
                 .ToList();
             return result;
@@ -38,8 +40,20 @@ namespace PrinterySVC.ImplementationsDB
             {
                 return new CustomerVievModel
                 {
+                    
                     Number = element.Number,
-                    CustomerFIO = element.CustomerFIO
+                    Mail = element.Mail,
+                    CustomerFIO = element.CustomerFIO,
+                    Messages = context.MessageInfos
+                        .Where(recM => recM.CustomerId == element.Number)
+                        .Select(recM => new MessageInfoViewModel
+                        {
+                            MessageId = recM.MessageId,
+                            Subject =recM.Subject,
+                            Body = recM.Body
+                        })
+                        .ToList()
+
                 };
             }
             throw new Exception("Элемент не найден");
@@ -54,6 +68,7 @@ namespace PrinterySVC.ImplementationsDB
             }
             context.Customers.Add(new Customer
             {
+                Mail = model.Mail,
                 CustomerFIO = model.CustomerFIO
             });
             context.SaveChanges();
@@ -72,6 +87,7 @@ namespace PrinterySVC.ImplementationsDB
             {
                 throw new Exception("Элемент не найден");
             }
+            element.Mail = model.Mail;
             element.CustomerFIO = model.CustomerFIO;
             context.SaveChanges();
         }

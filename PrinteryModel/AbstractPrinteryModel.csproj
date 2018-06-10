@@ -53,6 +53,7 @@
     <Compile Include="Edition.cs" />
     <Compile Include="EditionMaterial.cs" />
     <Compile Include="Material.cs" />
+    <Compile Include="MessageInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rack.cs" />
     <Compile Include="RackMaterial.cs" />

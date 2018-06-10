@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using PrinterySVC.ViewModel;
 
@@ -21,21 +22,17 @@ namespace AbstractPrinteryView
         {
             try
             {
-                var response = APIClient.GetRequest("api/Material/GetList");
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    comboBoxMaterial.DisplayMember = "MaterialName";
-                    comboBoxMaterial.ValueMember = "Number";
-                    comboBoxMaterial.DataSource = APIClient.GetElement<List<MaterialViewModel>>(response);
-                    comboBoxMaterial.SelectedItem = null;
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                comboBoxMaterial.DisplayMember = "MaterialName";
+                comboBoxMaterial.ValueMember = "Number";
+                comboBoxMaterial.DataSource = Task.Run(() => APIClient.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                comboBoxMaterial.SelectedItem = null;
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             if (model != null)

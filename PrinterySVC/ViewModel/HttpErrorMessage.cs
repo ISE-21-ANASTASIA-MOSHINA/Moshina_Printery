@@ -8,18 +8,16 @@ using System.Threading.Tasks;
 namespace PrinterySVC.ViewModel
 {
     [DataContract]
-    public class CustomerVievModel
+    public class HttpErrorMessage
     {
         [DataMember]
-        public int Number { get; set; }
+        public string Message { get; set; }
 
         [DataMember]
-        public string Mail { get; set; }
+        public string ExceptionMessage { get; set; }
 
         [DataMember]
-        public string CustomerFIO { get; set; }
+        public string MessageDetail { get; set; }
 
-        [DataMember]
-        public List<MessageInfoViewModel> Messages { get; set; }
     }
 }
