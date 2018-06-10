@@ -25,17 +25,6 @@ namespace PrinterySVC.ImplementationsList
             return result;
         }
 
-        public CustomerVievModel GetElement(int number)
-        {
-            for (int i = 0; i < source.Customers.Count; ++i)
-            {
-                if (source.Customers[i].Number == number)
-                {
-                    return new CustomerVievModel
-                    {
-                        Number = source.Customers[i].Number,
-                        CustomerFIO = source.Customers[i].CustomerFIO
-                    };
                 }
             }
             throw new Exception("Элемент не найден");
