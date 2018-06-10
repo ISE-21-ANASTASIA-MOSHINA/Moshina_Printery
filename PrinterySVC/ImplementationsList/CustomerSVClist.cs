@@ -10,7 +10,6 @@ using PrinterySVC.ViewModel;
 
 namespace PrinterySVC.ImplementationsList
 {
-    public class CustomerSVClist: ICustomerSVC
     {
         private SingletonDataList source;
 
@@ -21,30 +20,60 @@ namespace PrinterySVC.ImplementationsList
 
         public List<CustomerVievModel> GetList()
         {
+           
+            List<CustomerVievModel> result = source.Customers
+                .Select(rec => new CustomerVievModel
+                {
+                    Number = rec.Number,
+                    CustomerFIO = rec.CustomerFIO
+                })
+                .ToList();
+            return result;
+        }
+
+        public CustomerVievModel GetElement(int id)
+        {
+            Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
+            {
+                return new CustomerVievModel
+                {
+                    Number = element.Number,
+                    CustomerFIO = element.CustomerFIO
+                };
             }
             throw new Exception("Элемент не найден");
         }
 
+        public void AddElement(CustomerBindingModel model)
+        {
+            Customer element = source.Customers.FirstOrDefault(rec => rec.CustomerFIO == model.CustomerFIO);
+            if (element != null)
+            {
+                throw new Exception("Уже есть клиент с таким ФИО");
+            }
+            int maxNumber = source.Customers.Count > 0 ? source.Customers.Max(rec => rec.Number) : 0;
+            source.Customers.Add(new Customer
+            {
+                Number = maxNumber + 1,
+                CustomerFIO = model.CustomerFIO
+            });
+        }
+
         public void UpElement(CustomerBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec =>
+                                    rec.CustomerFIO == model.CustomerFIO && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Customers[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Customers[i].CustomerFIO == model.CustomerFIO &&
-                    source.Customers[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть клиент с таким ФИО");
-                }
+                throw new Exception("Уже есть клиент с таким ФИО");
             }
-            if (index == -1)
+            element = source.Customers.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Customers[index].CustomerFIO = model.CustomerFIO;
+            element.CustomerFIO = model.CustomerFIO;
         }
 
         public void DelElement(int id)
