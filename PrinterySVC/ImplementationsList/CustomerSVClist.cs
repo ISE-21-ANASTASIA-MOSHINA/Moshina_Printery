@@ -49,15 +49,15 @@ namespace PrinterySVC.ImplementationsList
 
         public void DelElement(int number)
         {
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Customers[i].Number == number)
-                {
-                    source.Customers.RemoveAt(i);
-                    return;
-                }
+                source.Customers.Remove(element);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
         }
     }
 }
