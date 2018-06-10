@@ -57,12 +57,6 @@ namespace AbstractPrinteryView
                 LoadData();
             }
         }
-
-        private void buttonUpd_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonDel_Click(object sender, EventArgs e)
         {
             if (dataGridView.SelectedRows.Count == 1)
