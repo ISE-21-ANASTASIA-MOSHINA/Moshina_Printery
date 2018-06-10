@@ -25,24 +25,20 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    var response = APIClient.GetRequest("api/Rack/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var stock = APIClient.GetElement<RackViewModel>(response);
-                        textBoxName.Text = stock.RackName;
-                        dataGridView.DataSource = stock.RackMaterial;
-                        dataGridView.Columns[0].Visible = false;
-                        dataGridView.Columns[1].Visible = false;
-                        dataGridView.Columns[2].Visible = false;
-                        dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
+                    var rack = Task.Run(() => APIClient.GetRequestData<RackViewModel>("api/Rack/Get/" + id.Value)).Result;
+                    textBoxName.Text = rack.RackName;
+                    dataGridView.DataSource = rack.RackMaterial;
+                    dataGridView.Columns[0].Visible = false;
+                    dataGridView.Columns[1].Visible = false;
+                    dataGridView.Columns[2].Visible = false;
+                    dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -55,41 +51,37 @@ namespace AbstractPrinteryView
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
+            string name = textBoxName.Text;
+            Task task;
+            if (id.HasValue)
             {
-
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
+                task = Task.Run(() => APIClient.PostRequestData("api/Rack/UpdElement", new RackBindingModel
                 {
-                    response = APIClient.PostRequest("api/Rack/UpdElement", new RackBindingModel
-                    {
-                        Number = id.Value,
-                        RackName = textBoxName.Text
-                    });
-                }
-                else
-                {
-                    response = APIClient.PostRequest("api/Rack/AddElement", new RackBindingModel
-                    {
-                        RackName = textBoxName.Text
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
-
+                    Number = id.Value,
+                    RackName = name
+                }));
             }
-            catch (Exception ex)
+            else
             {
+                task = Task.Run(() => APIClient.PostRequestData("api/Rack/AddElement", new RackBindingModel
+                {
+                    RackName = name
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

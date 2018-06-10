@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
@@ -65,6 +66,7 @@
     <Compile Include="BindingModel\BookingBindingModel.cs" />
     <Compile Include="BindingModel\CustomerBindingModel.cs" />
     <Compile Include="BindingModel\EditionBindingModel.cs" />
+    <Compile Include="BindingModel\MessageInfoBindingModel.cs" />
     <Compile Include="BindingModel\ReportBindingModel.cs" />
     <Compile Include="BindingModel\EditionMaterialBindingModel.cs" />
     <Compile Include="BindingModel\MaterialBindingModel.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="ImplementationsDB\EditionSVCDB.cs" />
     <Compile Include="ImplementationsDB\MainSVCDB.cs" />
     <Compile Include="ImplementationsDB\MaterialSVCDB.cs" />
+    <Compile Include="ImplementationsDB\MessageInfoSVCBD.cs" />
     <Compile Include="ImplementationsDB\RackSVCDB.cs" />
     <Compile Include="ImplementationsDB\ReportSVCBD.cs" />
     <Compile Include="ImplementationsDB\TypographerSVCDB.cs" />
@@ -88,6 +91,7 @@
     <Compile Include="Inteface\IEditionSVC.cs" />
     <Compile Include="Inteface\IMainSVC.cs" />
     <Compile Include="Inteface\IMaterialSVC.cs" />
+    <Compile Include="Inteface\IMessageInfoSVC.cs" />
     <Compile Include="Inteface\IRackSVC.cs" />
     <Compile Include="Inteface\IReportSVC.cs" />
     <Compile Include="Inteface\ITypographerSVC.cs" />
@@ -98,6 +102,14 @@
     <Compile Include="Migrations\201803310745471_FirstMigration.cs" />
     <Compile Include="Migrations\201803310745471_FirstMigration.Designer.cs">
       <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805251758147_AddFieldInCustomer.cs" />
+    <Compile Include="Migrations\201805251758147_AddFieldInCustomer.Designer.cs">
+      <DependentUpon>201805251758147_AddFieldInCustomer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805251911598_AddTableMessageInfo.cs" />
+    <Compile Include="Migrations\201805251911598_AddTableMessageInfo.Designer.cs">
+      <DependentUpon>201805251911598_AddTableMessageInfo.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -112,7 +124,9 @@
     <Compile Include="ViewModel\CustomerVievModel.cs" />
     <Compile Include="ViewModel\EditionMaterialViewModel.cs" />
     <Compile Include="ViewModel\EditionViewModel.cs" />
+    <Compile Include="ViewModel\HttpErrorMessage.cs" />
     <Compile Include="ViewModel\MaterialViewModel.cs" />
+    <Compile Include="ViewModel\MessageInfoViewModel.cs" />
     <Compile Include="ViewModel\RackMaterialViewModel.cs" />
     <Compile Include="ViewModel\RacksLoadViewModel.cs" />
     <Compile Include="ViewModel\RackViewModel.cs" />
@@ -137,6 +151,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201803310745471_FirstMigration.resx">
       <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805251758147_AddFieldInCustomer.resx">
+      <DependentUpon>201805251758147_AddFieldInCustomer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805251911598_AddTableMessageInfo.resx">
+      <DependentUpon>201805251911598_AddTableMessageInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -29,22 +29,18 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    var response = APIClient.GetRequest("api/Edition/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var edition = APIClient.GetElement<EditionViewModel>(response);
-                        textBoxName.Text = edition.EditionName;
-                        textBoxPrice.Text = edition.Cost.ToString();
-                        editionMaterials = edition.EditionMaterials;
-                        LoadData();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
+                    var edition = Task.Run(() => APIClient.GetRequestData<EditionViewModel>("api/Edition/Get/" + id.Value)).Result;
+                    textBoxName.Text = edition.EditionName;
+                    textBoxPrice.Text = edition.Cost.ToString();
+                    editionMaterials = edition.EditionMaterials;
+                    LoadData();
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -146,59 +142,57 @@ namespace AbstractPrinteryView
                 MessageBox.Show("Заполните компоненты", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
+            List<EditionMaterialBindingModel> editionMaterialBM = new List<EditionMaterialBindingModel>();
+            for (int i = 0; i < editionMaterials.Count; ++i)
             {
-                List<EditionMaterialBindingModel> editionMaterialBM = new List<EditionMaterialBindingModel>();
-                for (int i = 0; i < editionMaterials.Count; ++i)
+                editionMaterialBM.Add(new EditionMaterialBindingModel
                 {
-                    editionMaterialBM.Add(new EditionMaterialBindingModel
-                    {
-                        Number = editionMaterials[i].Number,
-                        EditionNamber = editionMaterials[i].EditionNamber,
-                        MaterialNamber = editionMaterials[i].MaterialNamber,
-                        Count = editionMaterials[i].Count
-                    });
-                }
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
-                {
-                    response = APIClient.PostRequest("api/Edition/UpdElement", new EditionBindingModel
-                    {
-                        Number= id.Value,
-                        EditionName = textBoxName.Text,
-                        Price = Convert.ToInt32(textBoxPrice.Text),
-                        EditionMaterials = editionMaterialBM
-                    });
-                }
-                else
-                {
-                    response = APIClient.PostRequest("api/Edition/AddElement", new EditionBindingModel
-                    {
-                        EditionName = textBoxName.Text,
-                        Price = Convert.ToInt32(textBoxPrice.Text),
-                        EditionMaterials = editionMaterialBM
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                    Number = editionMaterials[i].Number,
+                    EditionNamber = editionMaterials[i].EditionNamber,
+                    MaterialNamber = editionMaterials[i].MaterialNamber,
+                    Count = editionMaterials[i].Count
+                });
             }
-            catch (Exception ex)
+            string name = textBoxName.Text;
+            int price = Convert.ToInt32(textBoxPrice.Text);
+            Task task;
+            if (id.HasValue)
             {
+                task = Task.Run(() => APIClient.PostRequestData("api/Edition/UpdElement", new EditionBindingModel
+                {
+                    Number = id.Value,
+                    EditionName = name,
+                    Price = price,
+                    EditionMaterials = editionMaterialBM
+                }));
+            }
+            else
+            {
+                task = Task.Run(() => APIClient.PostRequestData("api/Edition/AddElement", new EditionBindingModel
+                {
+                    EditionName = name,
+                    Price = price,
+                    EditionMaterials = editionMaterialBM
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
     }
