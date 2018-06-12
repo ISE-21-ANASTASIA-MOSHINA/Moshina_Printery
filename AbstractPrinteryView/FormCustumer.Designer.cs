@@ -87,7 +87,7 @@ namespace AbstractPrinteryView
             this.Controls.Add(this.labelFIO);
             this.Name = "FormCustumer";
             this.Text = "Клиент";
-            this.Load += new System.EventHandler(this.FormCostumer_Load);
+            this.Load += new System.EventHandler(this.FormCoastumer_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

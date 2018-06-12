@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrinteryModel
 {
     public class RackMaterial // сколько материала на складе
     {
-        public int MaterialNumber;
-
-        public int Namber { get; set; }
-        public int RackNamber { get; set; }
-        public int MaterialNamber { get; set; }
+        [Key]
+        public int Number { get; set; }
+        public int RackNumber { get; set; }
+        public int MaterialNumber { get; set; }
         public int Count { get; set; }
+        public virtual Rack Rack { get; set; }
+        public virtual Material Material { get; set; }
     }
 }

@@ -8,9 +8,9 @@ namespace PrinterySVC.ViewModel
 {
     public class RackMaterialViewModel
     {
-        public int Namber { get; set; }
-        public int RackNamber { get; set; }
-        public int MaterialNameber { get; set; }
+        public int Number { get; set; }
+        public int RackNumber { get; set; }
+        public int MaterialNumber { get; set; }
         public string MaterialName { get; set; }
         public int Count { get; set; }
     }

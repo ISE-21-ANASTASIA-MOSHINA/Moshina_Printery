@@ -40,7 +40,7 @@ namespace AbstractPrinteryWpf
                 if (listMaterial != null)
                 {
                     comboBoxMaterial.DisplayMemberPath = "MaterialName";
-                    comboBoxMaterial.SelectedValuePath = "Id";
+                    comboBoxMaterial.SelectedValuePath = "Number";
                     comboBoxMaterial.ItemsSource = listMaterial;
                     comboBoxMaterial.SelectedItem = null;
                 }
@@ -48,7 +48,7 @@ namespace AbstractPrinteryWpf
                 if (listRack != null)
                 {
                     comboBoxRack.DisplayMemberPath = "RackName";
-                    comboBoxRack.SelectedValuePath = "Id";
+                    comboBoxRack.SelectedValuePath = "Number";
                     comboBoxRack.ItemsSource = listRack;
                     comboBoxRack.SelectedItem = null;
                 }
@@ -80,8 +80,8 @@ namespace AbstractPrinteryWpf
             {
                 serviceMain.PutMaterialOnRack(new RackMaterialBindingModel
                 {
-                    MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
-                    RackNamber = Convert.ToInt32(comboBoxRack.SelectedValue),
+                    MaterialNumber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
+                    RackNumber = Convert.ToInt32(comboBoxRack.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text)
                 });
                 MessageBox.Show("Сохранение прошло успешно", "Информация",

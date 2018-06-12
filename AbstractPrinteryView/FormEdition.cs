@@ -43,7 +43,7 @@ namespace AbstractPrinteryView
                     if (view != null)
                     {
                         textBoxName.Text = view.EditionName;
-                        textBoxPrice.Text = view.Cost.ToString();
+                        textBoxPrice.Text = view.Coast.ToString();
                         editionMaterials = view.EditionMaterials;
                         LoadData();
                     }
@@ -88,7 +88,7 @@ namespace AbstractPrinteryView
                 {
                     if (id.HasValue)
                     {
-                        form.Model.EditionNamber = id.Value;
+                        form.Model.EditionNumber = id.Value;
                     }
                     editionMaterials.Add(form.Model);
                 }
@@ -159,14 +159,14 @@ namespace AbstractPrinteryView
                     editionMaterialBM.Add(new EditionMaterialBindingModel
                     {
                         Number = editionMaterials[i].Number,
-                        EditionNamber = editionMaterials[i].EditionNamber,
-                        MaterialNamber = editionMaterials[i].MaterialNamber,
+                        EditionNumber = editionMaterials[i].EditionNumber,
+                        MaterialNumber = editionMaterials[i].MaterialNumber,
                         Count = editionMaterials[i].Count
                     });
                 }
                 if (id.HasValue)
                 {
-                    service.UpElement(new EdiitionViewModel
+                    service.UpdElement(new EditionBindingModel
                     {
                         Number= id.Value,
                         EditionName = textBoxName.Text,
@@ -176,7 +176,7 @@ namespace AbstractPrinteryView
                 }
                 else
                 {
-                    service.AddElement(new EdiitionViewModel
+                    service.AddElement(new EditionBindingModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxPrice.Text),

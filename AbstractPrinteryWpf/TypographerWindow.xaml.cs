@@ -57,7 +57,7 @@ namespace AbstractPrinteryWpf
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new TypographerBildingModel
+                    service.UpdElement(new TypographerBildingModel
                     {
                         Number = id.Value,
                         TypographerFIO = textBoxFullName.Text

@@ -38,7 +38,7 @@ namespace AbstractPrinteryWpf
                 if (list != null)
                 {
                     comboBoxMaterial.DisplayMemberPath = "MaterialName";
-                    comboBoxMaterial.SelectedValuePath = "Id";
+                    comboBoxMaterial.SelectedValuePath = "Number";
                     comboBoxMaterial.ItemsSource = list;
                     comboBoxMaterial.SelectedItem = null;
                 }
@@ -80,7 +80,7 @@ namespace AbstractPrinteryWpf
                 {
                     model = new EditionMaterialViewModel
                     {
-                        MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
+                        MaterialNumber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
                         MaterialName = comboBoxMaterial.Text,
                         Count = Convert.ToInt32(textBoxCount.Text)
                     };

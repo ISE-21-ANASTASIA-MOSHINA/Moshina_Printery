@@ -59,7 +59,7 @@ namespace AbstractPrinteryWpf
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new MaterialBindingModel
+                    service.UpdElement(new MaterialBindingModel
                     {
                         Number = id.Value,
                         MaterialName = textBoxName.Text

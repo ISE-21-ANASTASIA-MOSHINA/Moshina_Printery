@@ -70,7 +70,7 @@ namespace AbstractPrinteryView
                     int id = Convert.ToInt32(comboBoxEdition.SelectedValue);
                     EditionViewModel edition = serviceE.GetElement(id);
                     int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * edition.Cost).ToString();
+                    textBoxSum.Text = (count * edition.Coast).ToString();
                 }
                 catch (Exception ex)
                 {

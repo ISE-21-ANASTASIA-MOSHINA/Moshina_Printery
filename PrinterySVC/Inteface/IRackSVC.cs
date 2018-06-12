@@ -13,7 +13,7 @@ namespace PrinterySVC.Inteface
         List<RackViewModel> GetList();
         RackViewModel GetElement(int number);
         void AddElement(RackBindingModel model);
-        void UpElement(RackBindingModel model);
+        void UpdElement(RackBindingModel model);
         void DelElement(int number);
     }
 }
