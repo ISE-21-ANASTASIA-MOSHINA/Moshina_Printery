@@ -36,6 +36,17 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Word, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Word.15.0.4797.1003\lib\net20\Microsoft.Office.Interop.Word.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -55,12 +66,14 @@
     <Compile Include="BindingModel\MaterialBindingModel.cs" />
     <Compile Include="BindingModel\RackBindingModel.cs" />
     <Compile Include="BindingModel\RackMaterialBindingModel.cs" />
+    <Compile Include="BindingModel\ReportBindingModel.cs" />
     <Compile Include="BindingModel\TypographerBildingModel.cs" />
     <Compile Include="ImplementationsDB\CustomerSVCDB.cs" />
     <Compile Include="ImplementationsDB\EditionSVCDB.cs" />
     <Compile Include="ImplementationsDB\MainSVCDB.cs" />
     <Compile Include="ImplementationsDB\MaterialSVCDB.cs" />
     <Compile Include="ImplementationsDB\RackSVCDB.cs" />
+    <Compile Include="ImplementationsDB\ReportSVCBD.cs" />
     <Compile Include="ImplementationsDB\TypographerSVCDB.cs" />
     <Compile Include="ImplementationsList\CustomerSVClist.cs" />
     <Compile Include="ImplementationsList\EditionSVClist.cs" />
@@ -73,15 +86,23 @@
     <Compile Include="Inteface\IMainSVC.cs" />
     <Compile Include="Inteface\IMaterialSVC.cs" />
     <Compile Include="Inteface\IRackSVC.cs" />
+    <Compile Include="Inteface\IReportSVC.cs" />
     <Compile Include="Inteface\ITypographerSVC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SingletonDataList.cs" />
     <Compile Include="ViewModel\BookingViewModel.cs" />
+    <Compile Include="ViewModel\CustomerBookingsModel.cs" />
     <Compile Include="ViewModel\CustomerVievModel.cs" />
     <Compile Include="ViewModel\EditionMaterialViewModel.cs" />
     <Compile Include="ViewModel\EditionViewModel.cs" />
     <Compile Include="ViewModel\MaterialViewModel.cs" />
     <Compile Include="ViewModel\RackMaterialViewModel.cs" />
+    <Compile Include="ViewModel\RacksLoadViewModel.cs" />
     <Compile Include="ViewModel\RackViewModel.cs" />
     <Compile Include="ViewModel\TypographerViewModel.cs" />
   </ItemGroup>
@@ -94,6 +115,13 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Resources\TIMCYR.TTF" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
