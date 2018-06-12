@@ -1,6 +1,8 @@
-﻿using PrinterySVC.ImplementationsList;
+﻿using PrinterySVC;
+using PrinterySVC.ImplementationsDB;
 using PrinterySVC.Inteface;
 using System;
+using System.Data.Entity;
 using System.Windows;
 using Unity;
 using Unity.Lifetime;
@@ -13,7 +15,7 @@ namespace AbstractPrinteryWpf
     public partial class App : Application
     {
         [STAThread]
-        public static void Main()
+        static void Main()
         {
             var container = BuildUnityContainer();
 
@@ -24,12 +26,13 @@ namespace AbstractPrinteryWpf
         public static IUnityContainer BuildUnityContainer()
         {
             var currentContainer = new UnityContainer();
-            currentContainer.RegisterType<ICustomerSVC, CustomerSVClist>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMaterialSVC, MaterialSVClist>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<ITypographerSVC, TypographerSVClist>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IEditionSVC, EditionSVClist>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IRackSVC, RackSVClist>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMainSVC, MainSVClist>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<DbContext, AbstractDbContext>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<ICustomerSVC, CustomerSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IMaterialSVC, MaterialSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<ITypographerSVC, TypographerSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IEditionSVC, EditionSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IRackSVC, RackSVCDB>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IMainSVC, MainSVCDB>(new HierarchicalLifetimeManager());
 
             return currentContainer;
         }

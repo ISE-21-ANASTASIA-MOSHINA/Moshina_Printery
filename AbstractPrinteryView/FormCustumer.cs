@@ -33,7 +33,7 @@ namespace AbstractPrinteryView
             this.service = service;
         }
 
-        private void FormCostumer_Load(object sender, EventArgs e)
+        private void FormCoastumer_Load(object sender, EventArgs e)
         {
             if (id.HasValue)
             {
@@ -63,7 +63,7 @@ namespace AbstractPrinteryView
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new CustomerBindingModel
+                    service.UpdElement(new CustomerBindingModel
                     {
                         Number = id.Value,
                         CustomerFIO = textBoxFIO.Text

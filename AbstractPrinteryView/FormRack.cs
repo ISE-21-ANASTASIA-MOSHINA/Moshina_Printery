@@ -66,7 +66,7 @@ namespace AbstractPrinteryView
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new RackBindingModel
+                    service.UpdElement(new RackBindingModel
                     {
                         Number = id.Value,
                         RackName = textBoxName.Text

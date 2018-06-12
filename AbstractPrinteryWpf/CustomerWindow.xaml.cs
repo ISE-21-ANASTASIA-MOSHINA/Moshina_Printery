@@ -57,7 +57,7 @@ namespace AbstractPrinteryWpf
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new CustomerBindingModel
+                    service.UpdElement(new CustomerBindingModel
                     {
                         Number = id.Value,
                         CustomerFIO = textBoxFullName.Text

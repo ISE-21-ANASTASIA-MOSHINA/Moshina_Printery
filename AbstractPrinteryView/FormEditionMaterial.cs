@@ -51,7 +51,7 @@ namespace AbstractPrinteryView
             if (model != null)
             {
                 comboBoxMaterial.Enabled = false;
-                comboBoxMaterial.SelectedValue = model.MaterialNamber;
+                comboBoxMaterial.SelectedValue = model.MaterialNumber;
                 textBoxCount.Text = model.Count.ToString();
             }
         }
@@ -74,7 +74,7 @@ namespace AbstractPrinteryView
                 {
                     model = new EditionMaterialViewModel
                     {
-                        MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
+                        MaterialNumber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
                         MaterialName = comboBoxMaterial.Text,
                         Count = Convert.ToInt32(textBoxCount.Text)
                     };

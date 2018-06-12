@@ -13,7 +13,7 @@ namespace PrinterySVC.Inteface
         List<MaterialViewModel> GetList();
         MaterialViewModel GetElement(int number);
         void AddElement(MaterialBindingModel model);
-        void UpElement(MaterialBindingModel model);
+        void UpdElement(MaterialBindingModel model);
         void DelElement(int number);
     }
 }

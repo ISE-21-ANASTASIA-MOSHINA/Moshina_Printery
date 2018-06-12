@@ -85,8 +85,8 @@ namespace AbstractPrinteryView
             {
                 serviceM.PutMaterialOnRack(new RackMaterialBindingModel
                 {
-                    MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
-                    RackNamber = Convert.ToInt32(comboBoxRack.SelectedValue),
+                    MaterialNumber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
+                    RackNumber = Convert.ToInt32(comboBoxRack.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text)
                 });
                 MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);

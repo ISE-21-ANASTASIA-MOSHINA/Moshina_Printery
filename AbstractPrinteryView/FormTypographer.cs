@@ -62,7 +62,7 @@ namespace AbstractPrinteryView
             {
                 if (id.HasValue)
                 {
-                    service.UpElement(new TypographerBildingModel
+                    service.UpdElement(new TypographerBildingModel
                     {
                         Number = id.Value,
                         TypographerFIO = textBoxFIO.Text

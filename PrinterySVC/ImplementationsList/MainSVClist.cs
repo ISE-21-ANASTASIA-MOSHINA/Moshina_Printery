@@ -67,16 +67,16 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
             // смотрим по количеству компонентов на складах
-            var productMaterials = source.EditionMaterials.Where(rec => rec.EditionNamber == element.EditionNumber);
+            var productMaterials = source.EditionMaterials.Where(rec => rec.EditionNumber == element.EditionNumber);
             foreach (var productMaterial in productMaterials)
             {
                 int countOnRacks = source.RackMaterials
-                                            .Where(rec => rec.MaterialNumber == productMaterial.MaterialNamber)
+                                            .Where(rec => rec.MaterialNumber == productMaterial.MaterialNumber)
                                             .Sum(rec => rec.Count);
                 if (countOnRacks < productMaterial.Count * element.Count)
                 {
                     var componentName = source.Materials
-                                    .FirstOrDefault(rec => rec.Number == productMaterial.MaterialNamber);
+                                    .FirstOrDefault(rec => rec.Number == productMaterial.MaterialNumber);
                     throw new Exception("Не достаточно компонента " + componentName?.MaterialName +
                         " требуется " + productMaterial.Count + ", в наличии " + countOnRacks);
                 }
@@ -86,7 +86,7 @@ namespace PrinterySVC.ImplementationsList
             {
                 int countOnRacks = productMaterial.Count * element.Count;
                 var stockMaterials = source.RackMaterials
-                                            .Where(rec => rec.MaterialNamber == productMaterial.MaterialNamber);
+                                            .Where(rec => rec.MaterialNumber == productMaterial.MaterialNumber);
                 foreach (var stockMaterial in stockMaterials)
                 {
                     // компонентов на одном слкаде может не хватать
@@ -130,20 +130,20 @@ namespace PrinterySVC.ImplementationsList
         public void PutMaterialOnRack(RackMaterialBindingModel model)
         {
             RackMaterial element = source.RackMaterials
-                                                .FirstOrDefault(rec => rec.RackNamber == model.RackNamber &&
-                                                                    rec.MaterialNamber == model.MaterialNamber);
+                                                .FirstOrDefault(rec => rec.RackNumber == model.RackNumber &&
+                                                                    rec.MaterialNumber == model.MaterialNumber);
             if (element != null)
             {
                 element.Count += model.Count;
             }
             else
             {
-                int maxNumber = source.RackMaterials.Count > 0 ? source.RackMaterials.Max(rec => rec.Namber) : 0;
+                int maxNumber = source.RackMaterials.Count > 0 ? source.RackMaterials.Max(rec => rec.Number) : 0;
                 source.RackMaterials.Add(new RackMaterial
                 {
-                    Namber = ++maxNumber,
-                    RackNamber = model.RackNamber,
-                    MaterialNamber = model.MaterialNamber,
+                    Number = ++maxNumber,
+                    RackNumber = model.RackNumber,
+                    MaterialNumber = model.MaterialNumber,
                     Count = model.Count
                 });
             }

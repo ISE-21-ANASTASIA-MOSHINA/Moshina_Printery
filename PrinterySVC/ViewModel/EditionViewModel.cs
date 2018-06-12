@@ -10,7 +10,7 @@ namespace PrinterySVC.ViewModel
     {
         public int Number { get; set; }
         public string EditionName { get; set; }
-        public decimal Cost { get; set; }
+        public decimal Coast { get; set; }
         public List<EditionMaterialViewModel> EditionMaterials { get; set; }
     }
 }

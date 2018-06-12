@@ -13,7 +13,7 @@ namespace PrinterySVC.Inteface
         List<TypographerViewModel> GetList();
         TypographerViewModel GetElement(int number);
         void AddElement(TypographerBildingModel model);
-        void UpElement(TypographerBildingModel model);
+        void UpdElement(TypographerBildingModel model);
         void DelElement(int number);
     }
 }

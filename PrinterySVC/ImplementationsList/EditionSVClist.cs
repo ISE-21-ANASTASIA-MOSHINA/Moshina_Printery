@@ -5,8 +5,6 @@ using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PrinterySVC.ImplementationsList
 {
@@ -26,16 +24,16 @@ namespace PrinterySVC.ImplementationsList
                 {
                     Number = rec.Number,
                     EditionName = rec.EditionName,
-                    Cost = rec.CostEdition,
+                    Coast = rec.Coast,
                     EditionMaterials = source.EditionMaterials
-                            .Where(recPC => recPC.EditionNamber == rec.Number)
+                            .Where(recPC => recPC.EditionNumber == rec.Number)
                             .Select(recPC => new EditionMaterialViewModel
                             {
                                 Number = recPC.Number,
-                                EditionNamber = recPC.EditionNamber,
-                                MaterialNamber = recPC.MaterialNamber,
+                                EditionNumber = recPC.EditionNumber,
+                                MaterialNumber = recPC.MaterialNumber,
                                 MaterialName = source.Materials
-                                    .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                    .FirstOrDefault(recC => recC.Number == recPC.MaterialNumber)?.MaterialName,
                                 Count = recPC.Count
                             })
                             .ToList()
@@ -53,16 +51,16 @@ namespace PrinterySVC.ImplementationsList
                 {
                     Number = element.Number,
                     EditionName = element.EditionName,
-                    Cost = element.CostEdition,
+                    Coast = element.Coast,
                     EditionMaterials = source.EditionMaterials
-                            .Where(recPC => recPC.EditionNamber == element.Number)
+                            .Where(recPC => recPC.EditionNumber == element.Number)
                             .Select(recPC => new EditionMaterialViewModel
                             {
                                 Number = recPC.Number,
-                                EditionNamber = recPC.EditionNamber,
-                                MaterialNamber = recPC.MaterialNamber,
+                                EditionNumber = recPC.EditionNumber,
+                                MaterialNumber = recPC.MaterialNumber,
                                 MaterialName = source.Materials
-                                        .FirstOrDefault(recC => recC.Number == recPC.MaterialNamber)?.MaterialName,
+                                        .FirstOrDefault(recC => recC.Number == recPC.MaterialNumber)?.MaterialName,
                                 Count = recPC.Count
                             })
                             .ToList()
@@ -70,7 +68,27 @@ namespace PrinterySVC.ImplementationsList
             }
             throw new Exception("Элемент не найден");
         }
-        public void AddElement(EdiitionViewModel model)
+
+      
+
+     
+
+        public void DelElement(int id)
+        {
+            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
+            {
+                // удаяем записи по компонентам при удалении изделия
+                source.EditionMaterials.RemoveAll(rec => rec.EditionNumber == id);
+                source.Editions.Remove(element);
+            }
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
+        }
+
+        public void AddElement(EditionBindingModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec => rec.EditionName == model.EditionName);
             if (element != null)
@@ -82,14 +100,14 @@ namespace PrinterySVC.ImplementationsList
             {
                 Number = maxNumber + 1,
                 EditionName = model.EditionName,
-                CostEdition = model.Coast
+                Coast = model.Coast
             });
             // компоненты для изделия
             int maxPCNumber = source.EditionMaterials.Count > 0 ?
                                     source.EditionMaterials.Max(rec => rec.Number) : 0;
             // убираем дубли по компонентам
             var groupMaterials = model.EditionMaterials
-                                        .GroupBy(rec => rec.MaterialNamber)
+                                        .GroupBy(rec => rec.MaterialNumber)
                                         .Select(rec => new
                                         {
                                             MaterialNumber = rec.Key,
@@ -101,14 +119,14 @@ namespace PrinterySVC.ImplementationsList
                 source.EditionMaterials.Add(new EditionMaterial
                 {
                     Number = ++maxPCNumber,
-                    EditionNamber = maxNumber + 1,
-                    MaterialNamber = groupMaterial.MaterialNumber,
+                    EditionNumber = maxNumber + 1,
+                    MaterialNumber = groupMaterial.MaterialNumber,
                     Count = groupMaterial.Count
                 });
             }
         }
 
-        public void UpElement(EdiitionViewModel model)
+        public void UpdElement(EditionBindingModel model)
         {
             Edition element = source.Editions.FirstOrDefault(rec =>
                                         rec.EditionName == model.EditionName && rec.Number != model.Number);
@@ -122,25 +140,25 @@ namespace PrinterySVC.ImplementationsList
                 throw new Exception("Элемент не найден");
             }
             element.EditionName = model.EditionName;
-            element.CostEdition = model.Coast;
+            element.Coast = model.Coast;
 
             int maxPCNumber = source.EditionMaterials.Count > 0 ? source.EditionMaterials.Max(rec => rec.Number) : 0;
             // обновляем существуюущие компоненты
-            var compNumbers = model.EditionMaterials.Select(rec => rec.MaterialNamber).Distinct();
+            var compNumbers = model.EditionMaterials.Select(rec => rec.MaterialNumber).Distinct();
             var updateMaterials = source.EditionMaterials
-                                            .Where(rec => rec.EditionNamber == model.Number &&
-                                           compNumbers.Contains(rec.MaterialNamber));
+                                            .Where(rec => rec.EditionNumber == model.Number &&
+                                           compNumbers.Contains(rec.MaterialNumber));
             foreach (var updateMaterial in updateMaterials)
             {
                 updateMaterial.Count = model.EditionMaterials
                                                 .FirstOrDefault(rec => rec.Number == updateMaterial.Number).Count;
             }
-            source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == model.Number &&
-                                       !compNumbers.Contains(rec.MaterialNamber));
+            source.EditionMaterials.RemoveAll(rec => rec.EditionNumber == model.Number &&
+                                       !compNumbers.Contains(rec.MaterialNumber));
             // новые записи
             var groupMaterials = model.EditionMaterials
                                         .Where(rec => rec.Number == 0)
-                                        .GroupBy(rec => rec.MaterialNamber)
+                                        .GroupBy(rec => rec.MaterialNumber)
                                         .Select(rec => new
                                         {
                                             MaterialNumber = rec.Key,
@@ -149,8 +167,8 @@ namespace PrinterySVC.ImplementationsList
             foreach (var groupMaterial in groupMaterials)
             {
                 EditionMaterial elementPC = source.EditionMaterials
-                                        .FirstOrDefault(rec => rec.EditionNamber == model.Number &&
-                                                        rec.MaterialNamber == groupMaterial.MaterialNumber);
+                                        .FirstOrDefault(rec => rec.EditionNumber == model.Number &&
+                                                        rec.MaterialNumber == groupMaterial.MaterialNumber);
                 if (elementPC != null)
                 {
                     elementPC.Count += groupMaterial.Count;
@@ -160,25 +178,11 @@ namespace PrinterySVC.ImplementationsList
                     source.EditionMaterials.Add(new EditionMaterial
                     {
                         Number = ++maxPCNumber,
-                        EditionNamber = model.Number,
-                        MaterialNamber = groupMaterial.MaterialNumber,
+                        EditionNumber = model.Number,
+                        MaterialNumber = groupMaterial.MaterialNumber,
                         Count = groupMaterial.Count
                     });
                 }
-            }
-        }
-         public void DelElement(int id)
-        {
-            Edition element = source.Editions.FirstOrDefault(rec => rec.Number == id);
-            if (element != null)
-            {
-                // удаяем записи по компонентам при удалении изделия
-                source.EditionMaterials.RemoveAll(rec => rec.EditionNamber == id);
-                source.Editions.Remove(element);
-            }
-            else
-            {
-                throw new Exception("Элемент не найден");
             }
         }
     }

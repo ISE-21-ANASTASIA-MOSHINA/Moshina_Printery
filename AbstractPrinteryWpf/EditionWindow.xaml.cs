@@ -43,7 +43,7 @@ namespace AbstractPrinteryWpf
                     if (view != null)
                     {
                         textBoxName.Text = view.EditionName;
-                        textBoxCoast.Text = view.Cost.ToString();
+                        textBoxCoast.Text = view.Coast.ToString();
                         editionMaterials = view.EditionMaterials;
                         LoadData();
                     }
@@ -85,7 +85,7 @@ namespace AbstractPrinteryWpf
                 if (form.Model != null)
                 {
                     if (id.HasValue)
-                        form.Model.EditionNamber = id.Value;
+                        form.Model.EditionNumber = id.Value;
                     editionMaterials.Add(form.Model);
                 }
                 LoadData();
@@ -156,14 +156,14 @@ namespace AbstractPrinteryWpf
                     editionMaterialBM.Add(new EditionMaterialBindingModel
                     {
                         Number = editionMaterials[i].Number,
-                        EditionNamber = editionMaterials[i].EditionNamber,
-                        MaterialNamber = editionMaterials[i].MaterialNamber,
+                        EditionNumber = editionMaterials[i].EditionNumber,
+                        MaterialNumber = editionMaterials[i].MaterialNumber,
                         Count = editionMaterials[i].Count
                     });
                 }
                 if (id.HasValue)
                 {
-                    service.UpElement(new EdiitionViewModel
+                    service.UpdElement(new EditionBindingModel
                     {
                         Number = id.Value,
                         EditionName = textBoxName.Text,
@@ -173,7 +173,7 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new EdiitionViewModel
+                    service.AddElement(new EditionBindingModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxCoast.Text),
