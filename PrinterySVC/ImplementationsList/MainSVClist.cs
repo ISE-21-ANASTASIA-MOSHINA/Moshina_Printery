@@ -12,8 +12,6 @@ namespace PrinterySVC.ImplementationsList
 {
     public class MainSVClist : IMainSVC
     {
-        public class MainSVClist : IMainSVC
-    {
         private SingletonDataList source;
 
         public MainSVClist()
@@ -150,6 +148,6 @@ namespace PrinterySVC.ImplementationsList
                 });
             }
         }
-    }
+
     }
 }

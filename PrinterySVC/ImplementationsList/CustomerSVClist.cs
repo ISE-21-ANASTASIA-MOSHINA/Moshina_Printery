@@ -10,6 +10,7 @@ using PrinterySVC.ViewModel;
 
 namespace PrinterySVC.ImplementationsList
 {
+    public class CustomerSVClist: ICustomerSVC
     {
         private SingletonDataList source;
 
