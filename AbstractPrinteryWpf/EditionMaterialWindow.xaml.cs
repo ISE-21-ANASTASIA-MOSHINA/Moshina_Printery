@@ -1,6 +1,7 @@
 ﻿using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace AbstractPrinteryWpf
@@ -24,21 +25,18 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var response = APIClient.GetRequest("api/Material/GetList");
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    comboBoxMaterial.DisplayMemberPath = "MaterialName";
-                    comboBoxMaterial.SelectedValuePath = "Number";
-                    comboBoxMaterial.ItemsSource = APIClient.GetElement<List<MaterialViewModel>>(response);
-                    comboBoxMaterial.SelectedItem = null;
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                comboBoxMaterial.DisplayMemberPath = "MaterialName";
+                comboBoxMaterial.SelectedValuePath = "Number";
+                comboBoxMaterial.ItemsSource = Task.Run(() => APIClient.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                comboBoxMaterial.SelectedItem = null;
+
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
@@ -59,7 +57,7 @@ namespace AbstractPrinteryWpf
             }
             if (comboBoxMaterial.SelectedItem == null)
             {
-                MessageBox.Show("Выберите заготовку", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите ингредиент", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try

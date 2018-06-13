@@ -2,7 +2,6 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,22 +31,18 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    var response = APIClient.GetRequest("api/Edition/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var mebel = APIClient.GetElement<EditionViewModel>(response);
-                        textBoxName.Text = mebel.EditionName;
-                        textBoxCoast.Text = mebel.Coast.ToString();
-                        editionMaterials = mebel.EditionMaterials;
-                        LoadData();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
+                    var edition = Task.Run(() => APIClient.GetRequestData<EditionViewModel>("api/Edition/Get/" + id.Value)).Result;
+                    textBoxName.Text = edition.EditionName;
+                    textBoxCoast.Text = edition.Coast.ToString();
+                    editionMaterials = edition.EditionMaterials;
+                    LoadData();
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -143,57 +138,57 @@ namespace AbstractPrinteryWpf
             }
             if (editionMaterials == null || editionMaterials.Count == 0)
             {
-                MessageBox.Show("Заполните заготовки", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Заполните ингредиенты", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            try
+
+            List<EditionMaterialBindingModel> materialEditionBM = new List<EditionMaterialBindingModel>();
+            for (int i = 0; i < editionMaterials.Count; ++i)
             {
-                List<EditionMaterialBindingModel> editionMaterialBM = new List<EditionMaterialBindingModel>();
-                for (int i = 0; i < editionMaterials.Count; ++i)
+                materialEditionBM.Add(new EditionMaterialBindingModel
                 {
-                    editionMaterialBM.Add(new EditionMaterialBindingModel
-                    {
-                        Number = editionMaterials[i].Number,
-                        EditionNumber = editionMaterials[i].EditionNumber,
-                        MaterialNumber = editionMaterials[i].MaterialNumber,
-                        Count = editionMaterials[i].Count
-                    });
-                }
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
-                {
-                    response = APIClient.PostRequest("api/Edition/UpdElement", new EditionBindingModel
-                    {
-                        Number = id.Value,
-                        EditionName = textBoxName.Text,
-                        Coast = Convert.ToInt32(textBoxCoast.Text),
-                        EditionMaterials = editionMaterialBM
-                    });
-                }
-                else
-                {
-                    response = APIClient.PostRequest("api/Edition/AddElement", new EditionBindingModel
-                    {
-                        EditionName = textBoxName.Text,
-                        Coast = Convert.ToInt32(textBoxCoast.Text),
-                        EditionMaterials = editionMaterialBM
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
-                    DialogResult = true;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                    Number = editionMaterials[i].Number,
+                    EditionNumber = editionMaterials[i].EditionNumber,
+                    MaterialNumber = editionMaterials[i].MaterialNumber,
+                    Count = editionMaterials[i].Count
+                });
             }
-            catch (Exception ex)
+            string name = textBoxName.Text;
+            int coast = Convert.ToInt32(textBoxCoast.Text);
+            Task task;
+            if (id.HasValue)
             {
+                task = Task.Run(() => APIClient.PostRequestData("api/Edition/UpdElement", new EditionBindingModel
+                {
+                    Number = id.Value,
+                    EditionName = name,
+                    Coast = coast,
+                    EditionMaterials = materialEditionBM
+                }));
+            }
+            else
+            {
+                task = Task.Run(() => APIClient.PostRequestData("api/Edition/AddElement", new EditionBindingModel
+                {
+                    EditionName = name,
+                    Coast = coast,
+                    EditionMaterials = materialEditionBM
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

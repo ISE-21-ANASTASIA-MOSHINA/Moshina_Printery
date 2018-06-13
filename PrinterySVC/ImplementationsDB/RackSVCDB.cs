@@ -24,7 +24,7 @@ namespace PrinterySVC.ImplementationsDB
                 {
                     Number = rec.Number,
                     RackName = rec.RackName,
-                    RackMaterial = context.RackMaterials
+                    RackMaterials = context.RackMaterials
                             .Where(recPC => recPC.RackNumber == rec.Number)
                             .Select(recPC => new RackMaterialViewModel
                             {
@@ -49,7 +49,7 @@ namespace PrinterySVC.ImplementationsDB
                 {
                     Number = element.Number,
                     RackName = element.RackName,
-                    RackMaterial = context.RackMaterials
+                    RackMaterials = context.RackMaterials
                             .Where(recPC => recPC.RackNumber == element.Number)
                             .Select(recPC => new RackMaterialViewModel
                             {

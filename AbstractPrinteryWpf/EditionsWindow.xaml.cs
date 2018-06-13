@@ -1,8 +1,8 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -28,25 +28,21 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var response = APIClient.GetRequest("api/Edition/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<EditionViewModel> list = Task.Run(() => APIClient.GetRequestData<List<EditionViewModel>>("api/Edition/GetList")).Result;
+                if (list != null)
                 {
-                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(response);
-                    if (list != null)
-                    {
-                        dataGridViewEditions.ItemsSource = list;
-                        dataGridViewEditions.Columns[0].Visibility = Visibility.Hidden;
-                        dataGridViewEditions.Columns[1].Width = DataGridLength.Auto;
-                        dataGridViewEditions.Columns[3].Visibility = Visibility.Hidden;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    dataGridViewEditions.ItemsSource = list;
+                    dataGridViewEditions.Columns[0].Visibility = Visibility.Hidden;
+                    dataGridViewEditions.Columns[1].Width = DataGridLength.Auto;
+                    dataGridViewEditions.Columns[3].Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -58,7 +54,7 @@ namespace AbstractPrinteryWpf
                 LoadData();
         }
 
-        private void buttonUp_Click(object sender, EventArgs e)
+        private void buttonUpd_Click(object sender, EventArgs e)
         {
             if (dataGridViewEditions.SelectedItem != null)
             {
@@ -78,19 +74,21 @@ namespace AbstractPrinteryWpf
                 {
 
                     int id = ((EditionViewModel)dataGridViewEditions.SelectedItem).Number;
-                    try
+
+                    Task task = Task.Run(() => APIClient.PostRequestData("api/Edition/DelElement", new CustomerBindingModel { Number = id }));
+
+                    task.ContinueWith((prevTask) => MessageBox.Show("Запись удалена. Обновите список", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                    task.ContinueWith((prevTask) =>
                     {
-                        var response = APIClient.PostRequest("api/Edition/DelElement", new CustomerBindingModel { Number = id });
-                        if (!response.Result.IsSuccessStatusCode)
+                        var ex = (Exception)prevTask.Exception;
+                        while (ex.InnerException != null)
                         {
-                            throw new Exception(APIClient.GetError(response));
+                            ex = ex.InnerException;
                         }
-                    }
-                    catch (Exception ex)
-                    {
                         MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    LoadData();
+                    }, TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
         }

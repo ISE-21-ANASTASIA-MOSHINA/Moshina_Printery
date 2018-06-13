@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -27,24 +28,20 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var response = APIClient.GetRequest("api/Material/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<MaterialViewModel> list = Task.Run(() => APIClient.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                if (list != null)
                 {
-                    List<MaterialViewModel> list = APIClient.GetElement<List<MaterialViewModel>>(response);
-                    if (list != null)
-                    {
-                        dataGridViewElements.ItemsSource = list;
-                        dataGridViewElements.Columns[0].Visibility = Visibility.Hidden;
-                        dataGridViewElements.Columns[1].Width = DataGridLength.Auto;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    dataGridViewElements.ItemsSource = list;
+                    dataGridViewElements.Columns[0].Visibility = Visibility.Hidden;
+                    dataGridViewElements.Columns[1].Width = DataGridLength.Auto;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -75,19 +72,20 @@ namespace AbstractPrinteryWpf
                     MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     int id = ((MaterialViewModel)dataGridViewElements.SelectedItem).Number;
-                    try
+                    Task task = Task.Run(() => APIClient.PostRequestData("api/Material/DelElement", new CustomerBindingModel { Number = id }));
+
+                    task.ContinueWith((prevTask) => MessageBox.Show("Запись удалена. Обновите список", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                    task.ContinueWith((prevTask) =>
                     {
-                        var response = APIClient.PostRequest("api/Material/DelElement", new CustomerBindingModel { Number = id });
-                        if (!response.Result.IsSuccessStatusCode)
+                        var ex = (Exception)prevTask.Exception;
+                        while (ex.InnerException != null)
                         {
-                            throw new Exception(APIClient.GetError(response));
+                            ex = ex.InnerException;
                         }
-                    }
-                    catch (Exception ex)
-                    {
                         MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    LoadData();
+                    }, TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
         }

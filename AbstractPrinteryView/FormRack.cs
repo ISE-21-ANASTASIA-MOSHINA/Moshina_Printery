@@ -41,7 +41,7 @@ namespace AbstractPrinteryView
                     if (view != null)
                     {
                         textBoxName.Text = view.RackName;
-                        dataGridView.DataSource = view.RackMaterial;
+                        dataGridView.DataSource = view.RackMaterials;
                         dataGridView.Columns[0].Visible = false;
                         dataGridView.Columns[1].Visible = false;
                         dataGridView.Columns[2].Visible = false;
