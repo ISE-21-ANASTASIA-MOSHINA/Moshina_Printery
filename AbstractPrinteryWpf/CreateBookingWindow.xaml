@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="CreateBookingWindow" Height="217.437" Width="353.782">
     <Grid>
-        <Label x:Name="labelVisitor" Content="Посетитель:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="labelCustomer" Content="Посетитель:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Label x:Name="labelEdition" Content="Изделие:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
         <Label x:Name="labelCount" Content="Количество:" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top"/>
         <Label x:Name="labelSum" Content="Сумма:" HorizontalAlignment="Left" Margin="10,103,0,0" VerticalAlignment="Top"/>

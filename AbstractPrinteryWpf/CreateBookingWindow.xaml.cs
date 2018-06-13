@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -24,42 +25,30 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var responseC = APIClient.GetRequest("api/Customer/GetList");
-                if (responseC.Result.IsSuccessStatusCode)
+                List<CustomerVievModel> listC = Task.Run(() => APIClient.GetRequestData<List<CustomerVievModel>>("api/Customer/GetList")).Result;
+                if (listC != null)
                 {
-                    List<CustomerVievModel> list = APIClient.GetElement<List<CustomerVievModel>>(responseC);
-                    if (list != null)
-                    {
-                        comboBoxCustomer.DisplayMemberPath = "CustomerFIO";
-                        comboBoxCustomer.SelectedValuePath = "Number";
-                        comboBoxCustomer.ItemsSource = list;
-                        comboBoxEdition.SelectedItem = null;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(responseC));
-                }
-                var responseP = APIClient.GetRequest("api/Edition/GetList");
-                if (responseP.Result.IsSuccessStatusCode)
-                {
-                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(responseP);
-                    if (list != null)
-                    {
-                        comboBoxEdition.DisplayMemberPath = "EditionName";
-                        comboBoxEdition.SelectedValuePath = "Number";
-                        comboBoxEdition.ItemsSource = list;
-                        comboBoxEdition.SelectedItem = null;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(responseP));
+                    comboBoxCustomer.DisplayMemberPath = "CustomerFIO";
+                    comboBoxCustomer.SelectedValuePath = "Number";
+                    comboBoxCustomer.ItemsSource = listC;
+                    comboBoxEdition.SelectedItem = null;
                 }
 
+                List<EditionViewModel> listP = Task.Run(() => APIClient.GetRequestData<List<EditionViewModel>>("api/Edition/GetList")).Result;
+                if (listP != null)
+                {
+                    comboBoxEdition.DisplayMemberPath = "EditionName";
+                    comboBoxEdition.SelectedValuePath = "Number";
+                    comboBoxEdition.ItemsSource = listP;
+                    comboBoxEdition.SelectedItem = null;
+                }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -71,20 +60,16 @@ namespace AbstractPrinteryWpf
                 try
                 {
                     int id = ((EditionViewModel)comboBoxEdition.SelectedItem).Number;
-                    var responseP = APIClient.GetRequest("api/Edition/Get/" + id);
-                    if (responseP.Result.IsSuccessStatusCode)
-                    {
-                        EditionViewModel mebel = APIClient.GetElement<EditionViewModel>(responseP);
-                        int count = Convert.ToInt32(textBoxCount.Text);
-                        textBoxSum.Text = (count * (int)mebel.Coast).ToString();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(responseP));
-                    }
+                    EditionViewModel edition = Task.Run(() => APIClient.GetRequestData<EditionViewModel>("api/Edition/Get/" + id)).Result;
+                    int count = Convert.ToInt32(textBoxCount.Text);
+                    textBoxSum.Text = (count * (int)edition.Coast).ToString();
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -117,30 +102,31 @@ namespace AbstractPrinteryWpf
                 MessageBox.Show("Выберите мебель", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            try
+            int customerNumber = Convert.ToInt32(comboBoxCustomer.SelectedValue);
+            int editionNumber = Convert.ToInt32(comboBoxEdition.SelectedValue);
+            int count = Convert.ToInt32(textBoxCount.Text);
+            int sum = Convert.ToInt32(textBoxSum.Text);
+            Task task = Task.Run(() => APIClient.PostRequestData("api/Main/CreateBooking", new BookingBindingModel
             {
-                var response = APIClient.PostRequest("api/Main/CreateBooking", new BookingBindingModel
-                {
-                    CustomerNumber = Convert.ToInt32(comboBoxCustomer.SelectedValue),
-                    EditionNumber = Convert.ToInt32(comboBoxEdition.SelectedValue),
-                    Count = Convert.ToInt32(textBoxCount.Text),
-                    Sum = Convert.ToDecimal(textBoxSum.Text)
-                });
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
-                    DialogResult = true;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
-            }
-            catch (Exception ex)
+                CustomerNumber = customerNumber,
+                EditionNumber = editionNumber,
+                Count = count,
+                Sum = sum
+            }));
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
             {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

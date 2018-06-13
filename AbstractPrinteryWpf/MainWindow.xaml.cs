@@ -3,6 +3,7 @@ using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -22,27 +23,23 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var response = APIClient.GetRequest("api/Main/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<BookingViewModel> list = Task.Run(() => APIClient.GetRequestData<List<BookingViewModel>>("api/Main/GetList")).Result;
+                if (list != null)
                 {
-                    List<BookingViewModel> list = APIClient.GetElement<List<BookingViewModel>>(response);
-                    if (list != null)
-                    {
-                        dataGridViewMain.ItemsSource = list;
-                        dataGridViewMain.Columns[0].Visibility = Visibility.Hidden;
-                        dataGridViewMain.Columns[1].Visibility = Visibility.Hidden;
-                        dataGridViewMain.Columns[3].Visibility = Visibility.Hidden;
-                        dataGridViewMain.Columns[5].Visibility = Visibility.Hidden;
-                        dataGridViewMain.Columns[1].Width = DataGridLength.Auto;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    dataGridViewMain.ItemsSource = list;
+                    dataGridViewMain.Columns[0].Visibility = Visibility.Hidden;
+                    dataGridViewMain.Columns[1].Visibility = Visibility.Hidden;
+                    dataGridViewMain.Columns[3].Visibility = Visibility.Hidden;
+                    dataGridViewMain.Columns[5].Visibility = Visibility.Hidden;
+                    dataGridViewMain.Columns[1].Width = DataGridLength.Auto;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -106,25 +103,23 @@ namespace AbstractPrinteryWpf
             if (dataGridViewMain.SelectedItem != null)
             {
                 int id = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
-                try
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Main/FinishBooking", new BookingBindingModel
                 {
-                    var response = APIClient.PostRequest("api/Main/FinishBooking", new BookingBindingModel
-                    {
-                        Number = id
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        LoadData();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                    Number = id
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Статус заявки изменен. Обновите список", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                task.ContinueWith((prevTask) =>
                 {
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -133,25 +128,23 @@ namespace AbstractPrinteryWpf
             if (dataGridViewMain.SelectedItem != null)
             {
                 int id = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
-                try
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Main/PayBooking", new BookingBindingModel
                 {
-                    var response = APIClient.PostRequest("api/Main/PayBooking", new BookingBindingModel
-                    {
-                        Number = id
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        LoadData();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                    Number = id
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Статус заявки изменен. Обновите список", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                task.ContinueWith((prevTask) =>
                 {
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -169,30 +162,26 @@ namespace AbstractPrinteryWpf
 
             if (sfd.ShowDialog() == true)
             {
-
-                try
+                string fileName = sfd.FileName;
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Report/SaveEditionCoast", new ReportBindingModel
                 {
+                    FileName = fileName
+                }));
 
-                    var response = APIClient.PostRequest("api/Report/SaveEditionPrice", new ReportBindingModel
-                    {
-                        FileName = sfd.FileName
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                task.ContinueWith((prevTask) => MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                task.ContinueWith((prevTask) =>
                 {
-                    System.Windows.MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
-
         private void загруженностьСкладовToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog
@@ -201,25 +190,24 @@ namespace AbstractPrinteryWpf
             };
             if (sfd.ShowDialog() == true)
             {
-                try
+                string fileName = sfd.FileName;
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Report/SaveRacksLoad", new ReportBindingModel
                 {
-                    var response = APIClient.PostRequest("api/Report/SaveRacksLoad", new ReportBindingModel
-                    {
-                        FileName = sfd.FileName
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                    FileName = fileName
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                task.ContinueWith((prevTask) =>
                 {
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 

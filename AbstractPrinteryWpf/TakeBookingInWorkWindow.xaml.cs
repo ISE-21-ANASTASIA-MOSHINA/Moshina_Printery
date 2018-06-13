@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace AbstractPrinteryWpf
@@ -27,28 +28,25 @@ namespace AbstractPrinteryWpf
             {
                 if (!id.HasValue)
                 {
-                    MessageBox.Show("Не указана заявка", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     Close();
                 }
-                var response = APIClient.GetRequest("api/Typographer/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<TypographerViewModel> list = Task.Run(() => APIClient.GetRequestData<List<TypographerViewModel>>("api/Typographer/GetList")).Result;
+                if (list != null)
                 {
-                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
-                    if (list != null)
-                    {
-                        comboBoxTypographer.DisplayMemberPath = "TypographerFIO";
-                        comboBoxTypographer.SelectedValuePath = "Id";
-                        comboBoxTypographer.ItemsSource = list;
-                        comboBoxTypographer.SelectedItem = null;
-                    }
+                    comboBoxTypographer.DisplayMemberPath = "TypographerFIO";
+                    comboBoxTypographer.SelectedValuePath = "Number";
+                    comboBoxTypographer.ItemsSource = list;
+                    comboBoxTypographer.SelectedItem = null;
                 }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -57,29 +55,38 @@ namespace AbstractPrinteryWpf
         {
             if (comboBoxTypographer.SelectedItem == null)
             {
-                MessageBox.Show("Выберите рабочего", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите повара", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try
             {
-                var response = APIClient.PostRequest("api/Main/TakeBookingInWork", new BookingBindingModel
+                int typographerNumber = Convert.ToInt32(comboBoxTypographer.SelectedValue);
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Main/TakeBookingInWork", new BookingBindingModel
                 {
                     Number = id.Value,
-                    TypographerNumber = ((TypographerViewModel)comboBoxTypographer.SelectedItem).Number,
-                });
-                if (response.Result.IsSuccessStatusCode)
+                    TypographerNumber = typographerNumber
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Заказ готовится. Обновите список", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+                task.ContinueWith((prevTask) =>
                 {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
-                    DialogResult = true;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+
+                Close();
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

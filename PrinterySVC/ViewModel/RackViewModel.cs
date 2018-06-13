@@ -11,6 +11,6 @@ namespace PrinterySVC.ViewModel
         [DataMember]
         public string RackName { get; set; }
         [DataMember]
-        public List <RackMaterialViewModel> RackMaterial { get; set; }
+        public List <RackMaterialViewModel> RackMaterials { get; set; }
     }
 }

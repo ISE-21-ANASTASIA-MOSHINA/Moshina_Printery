@@ -5,6 +5,7 @@ using System.Windows;
 using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AbstractPrinteryWpf
 {
@@ -33,22 +34,15 @@ namespace AbstractPrinteryWpf
                                             " по " + Convert.ToDateTime(dateTimePickerTo.SelectedDate).ToString("dd-MM"));
                 reportViewer.LocalReport.SetParameters(parameter);
 
+                var dataSource = Task.Run(() => APIClient.PostRequestData<ReportBindingModel, List<CustomerBookingsModel>>("api/Report/GetCustomerBookings",
+                     new ReportBindingModel
+                     {
+                         DateFrom = dateTimePickerFrom.SelectedDate,
+                         DateTo = dateTimePickerTo.SelectedDate
+                     })).Result;
 
-                var response = APIClient.PostRequest("api/Report/GetCustomerOrders", new ReportBindingModel
-                {
-                    DateFrom = dateTimePickerFrom.SelectedDate,
-                    DateTo = dateTimePickerTo.SelectedDate
-                });
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    var dataSource = APIClient.GetElement<List<CustomerBookingsModel>>(response);
-                    ReportDataSource source = new ReportDataSource("DataSetBookings", dataSource);
-                    reportViewer.LocalReport.DataSources.Add(source);
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
-                }
+                ReportDataSource source = new ReportDataSource("DataSetBookings", dataSource);
+                reportViewer.LocalReport.DataSources.Add(source);
 
                 reportViewer.RefreshReport();
             }
@@ -71,27 +65,25 @@ namespace AbstractPrinteryWpf
             };
             if (sfd.ShowDialog() == true)
             {
-                try
+                string fileName = sfd.FileName;
+                Task task = Task.Run(() => APIClient.PostRequestData("api/Report/SaveCustomerBookings", new ReportBindingModel
                 {
-                    var response = APIClient.PostRequest("api/Report/SaveCustomerOrders", new ReportBindingModel
-                    {
-                        FileName = sfd.FileName,
-                        DateFrom = dateTimePickerFrom.SelectedDate,
-                        DateTo = dateTimePickerTo.SelectedDate
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                    FileName = sfd.FileName,
+                    DateFrom = dateTimePickerFrom.SelectedDate,
+                    DateTo = dateTimePickerTo.SelectedDate
+                }));
+                task.ContinueWith((prevTask) => MessageBox.Show("Список заказов сохранен", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+            TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                task.ContinueWith((prevTask) =>
                 {
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
     }

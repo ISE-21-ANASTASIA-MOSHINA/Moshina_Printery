@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -27,24 +28,20 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                var response = APIClient.GetRequest("api/Typographer/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<TypographerViewModel> list = Task.Run(() => APIClient.GetRequestData<List<TypographerViewModel>>("api/Typographer/GetList")).Result;
+                if (list != null)
                 {
-                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
-                    if (list != null)
-                    {
-                        dataGridViewTypographers.ItemsSource = list;
-                        dataGridViewTypographers.Columns[0].Visibility = Visibility.Hidden;
-                        dataGridViewTypographers.Columns[1].Width = DataGridLength.Auto;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    dataGridViewTypographers.ItemsSource = list;
+                    dataGridViewTypographers.Columns[0].Visibility = Visibility.Hidden;
+                    dataGridViewTypographers.Columns[1].Width = DataGridLength.Auto;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -75,19 +72,20 @@ namespace AbstractPrinteryWpf
                     MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     int id = ((TypographerViewModel)dataGridViewTypographers.SelectedItem).Number;
-                    try
+                    Task task = Task.Run(() => APIClient.PostRequestData("api/Typographer/DelElement", new CustomerBindingModel { Number = id }));
+
+                    task.ContinueWith((prevTask) => MessageBox.Show("Запись удалена. Обновите список", "Успех", MessageBoxButton.OK, MessageBoxImage.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                    task.ContinueWith((prevTask) =>
                     {
-                        var response = APIClient.PostRequest("api/Typographer/DelElement", new CustomerBindingModel { Number = id });
-                        if (!response.Result.IsSuccessStatusCode)
+                        var ex = (Exception)prevTask.Exception;
+                        while (ex.InnerException != null)
                         {
-                            throw new Exception(APIClient.GetError(response));
+                            ex = ex.InnerException;
                         }
-                    }
-                    catch (Exception ex)
-                    {
                         MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    LoadData();
+                    }, TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
         }
