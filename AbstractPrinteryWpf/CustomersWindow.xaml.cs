@@ -1,11 +1,9 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,16 +12,10 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class CustomersWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly ICustomerSVC service;
-
-        public CustomersWindow(ICustomerSVC service)
+        public CustomersWindow()
         {
             InitializeComponent();
             Loaded += CustomersWindow_Load;
-            this.service = service;
         }
 
         private void CustomersWindow_Load(object sender, EventArgs e)
@@ -35,12 +27,20 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                List<CustomerVievModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Customer/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridViewCustomers.ItemsSource = list;
-                    dataGridViewCustomers.Columns[0].Visibility = Visibility.Hidden;
-                    dataGridViewCustomers.Columns[1].Width = DataGridLength.Auto;
+                    List<CustomerVievModel> list = APIClient.GetElement<List<CustomerVievModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridViewCustomers.ItemsSource = list;
+                        dataGridViewCustomers.Columns[0].Visibility = Visibility.Hidden;
+                        dataGridViewCustomers.Columns[1].Width = DataGridLength.Auto;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace AbstractPrinteryWpf
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<CustomerWindow>();
+            var form = new CustomerWindow();
             if (form.ShowDialog() == true)
             {
                 LoadData();
@@ -62,8 +62,8 @@ namespace AbstractPrinteryWpf
         {
             if (dataGridViewCustomers.SelectedItem != null)
             {
-                var form = Container.Resolve<CustomerWindow>();
-                form.ID = ((CustomerVievModel)dataGridViewCustomers.SelectedItem).Number;
+                var form = new CustomerWindow();
+                form.Id = ((CustomerVievModel)dataGridViewCustomers.SelectedItem).Number;
                 if (form.ShowDialog() == true)
                 {
                     LoadData();
@@ -81,7 +81,11 @@ namespace AbstractPrinteryWpf
                     int id = ((CustomerVievModel)dataGridViewCustomers.SelectedItem).Number;
                     try
                     {
-                        service.DelElement(id);
+                        var response = APIClient.PostRequest("api/Customer/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {

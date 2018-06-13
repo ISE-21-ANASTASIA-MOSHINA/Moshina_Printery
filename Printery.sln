@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbstractPrinteryView", "Abs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbstractPrinteryWpf", "AbstractPrinteryWpf\AbstractPrinteryWpf.csproj", "{891BC223-BA5F-440E-92E9-C741AED15740}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbstractPrinteryRestApi", "AbstractPrinteryRestApi\AbstractPrinteryRestApi.csproj", "{EA811EA4-3E57-4625-A6F9-ACF019A9FADE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{891BC223-BA5F-440E-92E9-C741AED15740}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{891BC223-BA5F-440E-92E9-C741AED15740}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{891BC223-BA5F-440E-92E9-C741AED15740}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA811EA4-3E57-4625-A6F9-ACF019A9FADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA811EA4-3E57-4625-A6F9-ACF019A9FADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA811EA4-3E57-4625-A6F9-ACF019A9FADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA811EA4-3E57-4625-A6F9-ACF019A9FADE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

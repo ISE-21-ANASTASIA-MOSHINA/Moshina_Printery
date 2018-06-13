@@ -1,11 +1,10 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,20 +13,15 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class RackWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly IRackSVC service;
+        public int Id { set { id = value; } }
 
         private int? id;
 
-        public RackWindow(IRackSVC service)
+        public RackWindow()
         {
             InitializeComponent();
             Loaded += RackWindow_Load;
-            this.service = service;
+
         }
 
         private void RackWindow_Load(object sender, EventArgs e)
@@ -36,11 +30,12 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    RackViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Rack/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.RackName;
-                        dataGridViewRack.ItemsSource = view.RackMaterial;
+                        var baza = APIClient.GetElement<RackViewModel>(response);
+                        textBoxName.Text = baza.RackName;
+                        dataGridViewRack.ItemsSource = baza.RackMaterial;
                         dataGridViewRack.Columns[0].Visibility = Visibility.Hidden;
                         dataGridViewRack.Columns[1].Visibility = Visibility.Hidden;
                         dataGridViewRack.Columns[2].Visibility = Visibility.Hidden;
@@ -63,9 +58,10 @@ namespace AbstractPrinteryWpf
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new RackBindingModel
+                    response = APIClient.PostRequest("api/Rack/UpdElement", new RackBindingModel
                     {
                         Number = id.Value,
                         RackName = textBoxName.Text
@@ -73,14 +69,21 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new RackBindingModel
+                    response = APIClient.PostRequest("api/Rack/AddElement", new RackBindingModel
                     {
                         RackName = textBoxName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -95,5 +98,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-
-

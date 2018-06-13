@@ -1,12 +1,11 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -15,22 +14,16 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class EditionWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly IEditionSVC service;
+        public int Id { set { id = value; } }
 
         private int? id;
 
         private List<EditionMaterialViewModel> editionMaterials;
 
-        public EditionWindow(IEditionSVC service)
+        public EditionWindow()
         {
             InitializeComponent();
             Loaded += EditionWindow_Load;
-            this.service = service;
         }
 
         private void EditionWindow_Load(object sender, EventArgs e)
@@ -39,13 +32,18 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    EditionViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Edition/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.EditionName;
-                        textBoxCoast.Text = view.Coast.ToString();
-                        editionMaterials = view.EditionMaterials;
+                        var mebel = APIClient.GetElement<EditionViewModel>(response);
+                        textBoxName.Text = mebel.EditionName;
+                        textBoxCoast.Text = mebel.Coast.ToString();
+                        editionMaterials = mebel.EditionMaterials;
                         LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
                     }
                 }
                 catch (Exception ex)
@@ -79,7 +77,7 @@ namespace AbstractPrinteryWpf
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<EditionMaterialWindow>();
+            var form = new EditionMaterialWindow();
             if (form.ShowDialog() == true)
             {
                 if (form.Model != null)
@@ -96,7 +94,7 @@ namespace AbstractPrinteryWpf
         {
             if (dataGridViewMaterial.SelectedItem != null)
             {
-                var form = Container.Resolve<EditionMaterialWindow>();
+                var form = new EditionMaterialWindow();
                 form.Model = editionMaterials[dataGridViewMaterial.SelectedIndex];
                 if (form.ShowDialog() == true)
                 {
@@ -145,7 +143,7 @@ namespace AbstractPrinteryWpf
             }
             if (editionMaterials == null || editionMaterials.Count == 0)
             {
-                MessageBox.Show("Заполните ингредиенты", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Заполните заготовки", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try
@@ -161,9 +159,10 @@ namespace AbstractPrinteryWpf
                         Count = editionMaterials[i].Count
                     });
                 }
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new EditionBindingModel
+                    response = APIClient.PostRequest("api/Edition/UpdElement", new EditionBindingModel
                     {
                         Number = id.Value,
                         EditionName = textBoxName.Text,
@@ -173,16 +172,23 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new EditionBindingModel
+                    response = APIClient.PostRequest("api/Edition/AddElement", new EditionBindingModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxCoast.Text),
                         EditionMaterials = editionMaterialBM
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -197,4 +203,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-

@@ -1,12 +1,9 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -15,47 +12,51 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class CreateBookingWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly ICustomerSVC serviceCustomer;
-
-        private readonly IEditionSVC serviceEdition;
-
-        private readonly IMainSVC serviceMain;
-
-
-        public CreateBookingWindow(ICustomerSVC serviceV, IEditionSVC serviceS, IMainSVC serviceB)
+        public CreateBookingWindow()
         {
             InitializeComponent();
             Loaded += CreateBookingWindow_Load;
             comboBoxEdition.SelectionChanged += comboBoxEdition_SelectedIndexChanged;
             comboBoxEdition.SelectionChanged += new SelectionChangedEventHandler(comboBoxEdition_SelectedIndexChanged);
-            this.serviceCustomer = serviceV;
-            this.serviceEdition = serviceS;
-            this.serviceMain = serviceB;
         }
 
         private void CreateBookingWindow_Load(object sender, EventArgs e)
         {
             try
             {
-                List<CustomerVievModel> listCustomer = serviceCustomer.GetList();
-                if (listCustomer != null)
+                var responseC = APIClient.GetRequest("api/Customer/GetList");
+                if (responseC.Result.IsSuccessStatusCode)
                 {
-                    comboBoxCustomer.DisplayMemberPath = "CustomerFIO";
-                    comboBoxCustomer.SelectedValuePath = "Id";
-                    comboBoxCustomer.ItemsSource = listCustomer;
-                    comboBoxEdition.SelectedItem = null;
+                    List<CustomerVievModel> list = APIClient.GetElement<List<CustomerVievModel>>(responseC);
+                    if (list != null)
+                    {
+                        comboBoxCustomer.DisplayMemberPath = "CustomerFIO";
+                        comboBoxCustomer.SelectedValuePath = "Number";
+                        comboBoxCustomer.ItemsSource = list;
+                        comboBoxEdition.SelectedItem = null;
+                    }
                 }
-                List<EditionViewModel> listEdition = serviceEdition.GetList();
-                if (listEdition != null)
+                else
                 {
-                    comboBoxEdition.DisplayMemberPath = "EditionName";
-                    comboBoxEdition.SelectedValuePath = "Id";
-                    comboBoxEdition.ItemsSource = listEdition;
-                    comboBoxEdition.SelectedItem = null;
+                    throw new Exception(APIClient.GetError(responseC));
                 }
+                var responseP = APIClient.GetRequest("api/Edition/GetList");
+                if (responseP.Result.IsSuccessStatusCode)
+                {
+                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(responseP);
+                    if (list != null)
+                    {
+                        comboBoxEdition.DisplayMemberPath = "EditionName";
+                        comboBoxEdition.SelectedValuePath = "Number";
+                        comboBoxEdition.ItemsSource = list;
+                        comboBoxEdition.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(responseP));
+                }
+
             }
             catch (Exception ex)
             {
@@ -70,9 +71,17 @@ namespace AbstractPrinteryWpf
                 try
                 {
                     int id = ((EditionViewModel)comboBoxEdition.SelectedItem).Number;
-                    EditionViewModel edition = serviceEdition.GetElement(id);
-                    int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * edition.Coast).ToString();
+                    var responseP = APIClient.GetRequest("api/Edition/Get/" + id);
+                    if (responseP.Result.IsSuccessStatusCode)
+                    {
+                        EditionViewModel mebel = APIClient.GetElement<EditionViewModel>(responseP);
+                        int count = Convert.ToInt32(textBoxCount.Text);
+                        textBoxSum.Text = (count * (int)mebel.Coast).ToString();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(responseP));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -100,26 +109,33 @@ namespace AbstractPrinteryWpf
             }
             if (comboBoxCustomer.SelectedItem == null)
             {
-                MessageBox.Show("Выберите посетителя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите получателя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             if (comboBoxEdition.SelectedItem == null)
             {
-                MessageBox.Show("Выберите суши", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите мебель", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try
             {
-                serviceMain.CreateBooking(new BookingBindingModel
+                var response = APIClient.PostRequest("api/Main/CreateBooking", new BookingBindingModel
                 {
-                    CustomerNumber = ((CustomerVievModel)comboBoxCustomer.SelectedItem).Number,
-                    EditionNumber = ((EditionViewModel)comboBoxEdition.SelectedItem).Number,
+                    CustomerNumber = Convert.ToInt32(comboBoxCustomer.SelectedValue),
+                    EditionNumber = Convert.ToInt32(comboBoxEdition.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text),
                     Sum = Convert.ToDecimal(textBoxSum.Text)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {

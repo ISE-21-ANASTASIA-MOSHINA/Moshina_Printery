@@ -1,11 +1,9 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,16 +12,10 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class RacksWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IRackSVC service;
-
-        public RacksWindow(IRackSVC service)
+        public RacksWindow()
         {
             InitializeComponent();
             Loaded += RacksWindow_Load;
-            this.service = service;
         }
 
         private void RacksWindow_Load(object sender, EventArgs e)
@@ -35,12 +27,16 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                List<RackViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Rack/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridViewRacks.ItemsSource = list;
-                    dataGridViewRacks.Columns[0].Visibility = Visibility.Hidden;
-                    dataGridViewRacks.Columns[1].Width = DataGridLength.Auto;
+                    List<RackViewModel> list = APIClient.GetElement<List<RackViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridViewRacks.ItemsSource = list;
+                        dataGridViewRacks.Columns[0].Visibility = Visibility.Hidden;
+                        dataGridViewRacks.Columns[1].Width = DataGridLength.Auto;
+                    }
                 }
             }
             catch (Exception ex)
@@ -51,7 +47,7 @@ namespace AbstractPrinteryWpf
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<RackWindow>();
+            var form = new RackWindow();
             if (form.ShowDialog() == true)
                 LoadData();
         }
@@ -60,8 +56,8 @@ namespace AbstractPrinteryWpf
         {
             if (dataGridViewRacks.SelectedItem != null)
             {
-                var form = Container.Resolve<RackWindow>();
-                form.ID = ((RackViewModel)dataGridViewRacks.SelectedItem).Number;
+                var form = new RackWindow();
+                form.Id = ((RackViewModel)dataGridViewRacks.SelectedItem).Number;
                 if (form.ShowDialog() == true)
                 {
                     LoadData();
@@ -79,7 +75,11 @@ namespace AbstractPrinteryWpf
                     int id = ((RackViewModel)dataGridViewRacks.SelectedItem).Number;
                     try
                     {
-                        service.DelElement(id);
+                        var response = APIClient.PostRequest("api/Rack/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -96,4 +96,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-

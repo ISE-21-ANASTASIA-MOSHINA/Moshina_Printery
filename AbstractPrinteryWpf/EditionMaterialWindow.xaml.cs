@@ -1,11 +1,7 @@
-﻿using PrinterySVC.Inteface;
-using PrinterySVC.ViewModel;
+﻿using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,33 +10,31 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class EditionMaterialWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public EditionMaterialViewModel Model { set { model = value; } get { return model; } }
-
-        private readonly IMaterialSVC service;
 
         private EditionMaterialViewModel model;
 
-        public EditionMaterialWindow(IMaterialSVC service)
+        public EditionMaterialWindow()
         {
             InitializeComponent();
             Loaded += EditionMaterialWindow_Load;
-            this.service = service;
         }
 
         private void EditionMaterialWindow_Load(object sender, EventArgs e)
         {
-            List<MaterialViewModel> list = service.GetList();
             try
             {
-                if (list != null)
+                var response = APIClient.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
                     comboBoxMaterial.DisplayMemberPath = "MaterialName";
                     comboBoxMaterial.SelectedValuePath = "Number";
-                    comboBoxMaterial.ItemsSource = list;
+                    comboBoxMaterial.ItemsSource = APIClient.GetElement<List<MaterialViewModel>>(response);
                     comboBoxMaterial.SelectedItem = null;
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,13 +45,7 @@ namespace AbstractPrinteryWpf
             if (model != null)
             {
                 comboBoxMaterial.IsEnabled = false;
-                foreach (MaterialViewModel item in list)
-                {
-                    if (item.MaterialName == model.MaterialName)
-                    {
-                        comboBoxMaterial.SelectedItem = item;
-                    }
-                }
+                comboBoxMaterial.SelectedValue = model.MaterialNumber;
                 textBoxCount.Text = model.Count.ToString();
             }
         }
@@ -71,7 +59,7 @@ namespace AbstractPrinteryWpf
             }
             if (comboBoxMaterial.SelectedItem == null)
             {
-                MessageBox.Show("Выберите ингредиент", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите заготовку", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try

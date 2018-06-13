@@ -1,10 +1,9 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -13,20 +12,14 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class CustomerWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly ICustomerSVC service;
+        public int Id { set { id = value; } }
 
         private int? id;
 
-        public CustomerWindow(ICustomerSVC service)
+        public CustomerWindow()
         {
             InitializeComponent();
             Loaded += CustomerWindow_Load;
-            this.service = service;
         }
 
         private void CustomerWindow_Load(object sender, EventArgs e)
@@ -35,9 +28,16 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    CustomerVievModel view = service.GetElement(id.Value);
-                    if (view != null)
-                        textBoxFullName.Text = view.CustomerFIO;
+                    var response = APIClient.GetRequest("api/Customer/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        var visitor = APIClient.GetElement<CustomerVievModel>(response);
+                        textBoxFullName.Text = visitor.CustomerFIO;
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -55,9 +55,10 @@ namespace AbstractPrinteryWpf
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new CustomerBindingModel
+                    response = APIClient.PostRequest("api/Customer/UpdElement", new CustomerBindingModel
                     {
                         Number = id.Value,
                         CustomerFIO = textBoxFullName.Text
@@ -65,14 +66,21 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new CustomerBindingModel
+                    response = APIClient.PostRequest("api/Customer/AddElement", new CustomerBindingModel
                     {
                         CustomerFIO = textBoxFullName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {

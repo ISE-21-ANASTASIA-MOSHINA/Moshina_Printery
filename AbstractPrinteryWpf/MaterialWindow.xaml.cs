@@ -1,10 +1,9 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -13,32 +12,31 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class MaterialWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly IMaterialSVC service;
+        public int Id { set { id = value; } }
 
         private int? id;
 
-        public MaterialWindow(IMaterialSVC service)
+        public MaterialWindow()
         {
             InitializeComponent();
-            Loaded += FormMaterial_Load;
-            this.service = service;
+            Loaded += MaterialWindow_Load;
         }
 
-        private void FormMaterial_Load(object sender, EventArgs e)
+        private void MaterialWindow_Load(object sender, EventArgs e)
         {
             if (id.HasValue)
             {
                 try
                 {
-                    MaterialViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Material/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.MaterialName;
+                        var ingredient = APIClient.GetElement<MaterialViewModel>(response);
+                        textBoxName.Text = ingredient.MaterialName;
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
                     }
                 }
                 catch (Exception ex)
@@ -57,9 +55,10 @@ namespace AbstractPrinteryWpf
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new MaterialBindingModel
+                    response = APIClient.PostRequest("api/Material/UpdElement", new MaterialBindingModel
                     {
                         Number = id.Value,
                         MaterialName = textBoxName.Text
@@ -67,14 +66,21 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new MaterialBindingModel
+                    response = APIClient.PostRequest("api/Material/AddElement", new MaterialBindingModel
                     {
                         MaterialName = textBoxName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -89,4 +95,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-

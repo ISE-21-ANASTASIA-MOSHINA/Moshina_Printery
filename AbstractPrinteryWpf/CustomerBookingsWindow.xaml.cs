@@ -1,11 +1,10 @@
-﻿using PrinterySVC.Inteface;
-using System;
+﻿using System;
 using Microsoft.Reporting.WinForms;
 using Microsoft.Win32;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 using PrinterySVC.BindingModel;
+using PrinterySVC.ViewModel;
+using System.Collections.Generic;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,15 +13,9 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class CustomerBookingsWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IReportSVC service;
-
-        public CustomerBookingsWindow(IReportSVC service)
+        public CustomerBookingsWindow()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void buttonMake_Click(object sender, EventArgs e)
@@ -41,13 +34,22 @@ namespace AbstractPrinteryWpf
                 reportViewer.LocalReport.SetParameters(parameter);
 
 
-                var dataSource = service.GetCustomerOrders(new ReportBindingModel
+                var response = APIClient.PostRequest("api/Report/GetCustomerOrders", new ReportBindingModel
                 {
                     DateFrom = dateTimePickerFrom.SelectedDate,
                     DateTo = dateTimePickerTo.SelectedDate
                 });
-                ReportDataSource source = new ReportDataSource("DataSetBookings", dataSource);
-                reportViewer.LocalReport.DataSources.Add(source);
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    var dataSource = APIClient.GetElement<List<CustomerBookingsModel>>(response);
+                    ReportDataSource source = new ReportDataSource("DataSetBookings", dataSource);
+                    reportViewer.LocalReport.DataSources.Add(source);
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
+
                 reportViewer.RefreshReport();
             }
             catch (Exception ex)
@@ -71,13 +73,20 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    service.SaveCustomerOrders(new ReportBindingModel
+                    var response = APIClient.PostRequest("api/Report/SaveCustomerOrders", new ReportBindingModel
                     {
                         FileName = sfd.FileName,
                         DateFrom = dateTimePickerFrom.SelectedDate,
                         DateTo = dateTimePickerTo.SelectedDate
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
