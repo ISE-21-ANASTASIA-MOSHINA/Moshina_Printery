@@ -59,6 +59,9 @@ namespace AbstractPrinteryView
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+
+
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -100,6 +103,16 @@ namespace AbstractPrinteryView
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        private void comboBoxRack_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBoxMaterial_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

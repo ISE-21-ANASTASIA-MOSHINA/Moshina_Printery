@@ -30,7 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -40,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractDbContext.cs" />
     <Compile Include="BindingModel\BookingBindingModel.cs" />
     <Compile Include="BindingModel\CustomerBindingModel.cs" />
     <Compile Include="BindingModel\EditionBindingModel.cs" />
@@ -49,6 +57,12 @@
     <Compile Include="BindingModel\RackBindingModel.cs" />
     <Compile Include="BindingModel\RackMaterialBindingModel.cs" />
     <Compile Include="BindingModel\TypographerBildingModel.cs" />
+    <Compile Include="ImplementationsDB\CustomerSVCDB.cs" />
+    <Compile Include="ImplementationsDB\EditionSVCDB.cs" />
+    <Compile Include="ImplementationsDB\MainSVCDB.cs" />
+    <Compile Include="ImplementationsDB\MaterialSVCDB.cs" />
+    <Compile Include="ImplementationsDB\RackSVCDB.cs" />
+    <Compile Include="ImplementationsDB\TypographerSVCDB.cs" />
     <Compile Include="ImplementationsList\CustomerSVClist.cs" />
     <Compile Include="ImplementationsList\EditionSVClist.cs" />
     <Compile Include="ImplementationsList\MainSVClist.cs" />
@@ -61,6 +75,15 @@
     <Compile Include="Inteface\IMaterialSVC.cs" />
     <Compile Include="Inteface\IRackSVC.cs" />
     <Compile Include="Inteface\ITypographerSVC.cs" />
+    <Compile Include="Migrations\201803310744128_InitialCreate.cs" />
+    <Compile Include="Migrations\201803310744128_InitialCreate.Designer.cs">
+      <DependentUpon>201803310744128_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803310745471_FirstMigration.cs" />
+    <Compile Include="Migrations\201803310745471_FirstMigration.Designer.cs">
+      <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SingletonDataList.cs" />
     <Compile Include="ViewModel\BookingViewModel.cs" />
@@ -78,6 +101,17 @@
       <Name>AbstractPrinteryModel</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201803310744128_InitialCreate.resx">
+      <DependentUpon>201803310744128_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803310745471_FirstMigration.resx">
+      <DependentUpon>201803310745471_FirstMigration.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
