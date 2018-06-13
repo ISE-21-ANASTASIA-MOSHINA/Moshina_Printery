@@ -1,4 +1,5 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
+using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -19,11 +20,12 @@ namespace AbstractPrinteryView
         public new IUnityContainer Container { get; set; }
 
         private readonly IMainSVC service;
-
-        public FormMain(IMainSVC service)
+        private readonly IReportSVC reportSVC;
+        public FormMain(IMainSVC service, IReportSVC reportSVC)
         {
             InitializeComponent();
             this.service = service;
+            this.reportSVC = reportSVC;
         }
 
         private void LoadData()
@@ -138,6 +140,47 @@ namespace AbstractPrinteryView
         private void buttonRef_Click(object sender, EventArgs e)
         {
             LoadData();
+        }
+
+        private void отчетыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void прайсИзделийToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog
+            {
+                Filter = "doc|*.doc|docx|*.docx"
+            };
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    reportSVC.SaveProductPrice(new ReportBindingModel
+                    {
+                        FileName = sfd.FileName
+                    });
+                    MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void загруженностьСкладовToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+
+            var form = Container.Resolve<FormRacksLoad>();
+            form.ShowDialog();
+        }
+
+        private void заказыКлиентовToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            var form = Container.Resolve<FormCustomertOrders>();
+            form.ShowDialog();
         }
     }
 }
