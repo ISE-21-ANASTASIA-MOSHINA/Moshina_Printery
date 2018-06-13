@@ -1,13 +1,10 @@
 ﻿using Microsoft.Win32;
 using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -16,33 +13,32 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IMainSVC service;
-
-        private readonly IReportSVC reportService;
-
-        public MainWindow(IMainSVC service, IReportSVC reportService)
+        public MainWindow()
         {
             InitializeComponent();
-            this.service = service;
-            this.reportService = reportService;
         }
 
         private void LoadData()
         {
             try
             {
-                List<BookingViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Main/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridViewMain.ItemsSource = list;
-                    dataGridViewMain.Columns[0].Visibility = Visibility.Hidden;
-                    dataGridViewMain.Columns[1].Visibility = Visibility.Hidden;
-                    dataGridViewMain.Columns[3].Visibility = Visibility.Hidden;
-                    dataGridViewMain.Columns[5].Visibility = Visibility.Hidden;
-                    dataGridViewMain.Columns[1].Width = DataGridLength.Auto;
+                    List<BookingViewModel> list = APIClient.GetElement<List<BookingViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridViewMain.ItemsSource = list;
+                        dataGridViewMain.Columns[0].Visibility = Visibility.Hidden;
+                        dataGridViewMain.Columns[1].Visibility = Visibility.Hidden;
+                        dataGridViewMain.Columns[3].Visibility = Visibility.Hidden;
+                        dataGridViewMain.Columns[5].Visibility = Visibility.Hidden;
+                        dataGridViewMain.Columns[1].Width = DataGridLength.Auto;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -53,43 +49,43 @@ namespace AbstractPrinteryWpf
 
         private void клиентыToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<CustomersWindow>();
+            var form = new CustomersWindow();
             form.ShowDialog();
         }
 
         private void материалыToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<MaterialsWindow>();
+            var form = new MaterialsWindow();
             form.ShowDialog();
         }
 
         private void изделияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<EditionsWindow>();
+            var form = new EditionsWindow();
             form.ShowDialog();
         }
 
         private void складыToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<RacksWindow>();
+            var form = new RacksWindow();
             form.ShowDialog();
         }
 
         private void работникиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<TypographersWindow>();
+            var form = new TypographersWindow();
             form.ShowDialog();
         }
 
         private void пополнитьСкладToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<PutOnRackWindow>();
+            var form = new PutOnRackWindow();
             form.ShowDialog();
         }
 
         private void buttonCreateBooking_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<CreateBookingWindow>();
+            var form = new CreateBookingWindow();
             form.ShowDialog();
             LoadData();
         }
@@ -98,8 +94,8 @@ namespace AbstractPrinteryWpf
         {
             if (dataGridViewMain.SelectedItem != null)
             {
-                var form = Container.Resolve<TakeBookingInWorkWindow>();
-                form.ID = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
+                var form = new TakeBookingInWorkWindow();
+                form.Id = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
                 form.ShowDialog();
                 LoadData();
             }
@@ -112,8 +108,18 @@ namespace AbstractPrinteryWpf
                 int id = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
                 try
                 {
-                    service.FinishBooking(id);
-                    LoadData();
+                    var response = APIClient.PostRequest("api/Main/FinishBooking", new BookingBindingModel
+                    {
+                        Number = id
+                    });
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -129,8 +135,18 @@ namespace AbstractPrinteryWpf
                 int id = ((BookingViewModel)dataGridViewMain.SelectedItem).Number;
                 try
                 {
-                    service.PayBooking(id);
-                    LoadData();
+                    var response = APIClient.PostRequest("api/Main/PayBooking", new BookingBindingModel
+                    {
+                        Number = id
+                    });
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -156,11 +172,19 @@ namespace AbstractPrinteryWpf
 
                 try
                 {
-                    reportService.SaveProductPrice(new ReportBindingModel
+
+                    var response = APIClient.PostRequest("api/Report/SaveEditionPrice", new ReportBindingModel
                     {
                         FileName = sfd.FileName
                     });
-                    System.Windows.MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -179,11 +203,18 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    reportService.SaveRacksLoad(new ReportBindingModel
+                    var response = APIClient.PostRequest("api/Report/SaveRacksLoad", new ReportBindingModel
                     {
                         FileName = sfd.FileName
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -194,7 +225,7 @@ namespace AbstractPrinteryWpf
 
         private void заказыКлиентовToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<CustomerBookingsWindow>();
+            var form = new CustomerBookingsWindow();
             form.ShowDialog();
         }
     }

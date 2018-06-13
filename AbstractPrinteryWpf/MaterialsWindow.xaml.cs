@@ -1,11 +1,9 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,16 +12,10 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class MaterialsWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IMaterialSVC service;
-
-        public MaterialsWindow(IMaterialSVC service)
+        public MaterialsWindow()
         {
             InitializeComponent();
             Loaded += MaterialsWindow_Load;
-            this.service = service;
         }
 
         private void MaterialsWindow_Load(object sender, EventArgs e)
@@ -35,12 +27,20 @@ namespace AbstractPrinteryWpf
         {
             try
             {
-                List<MaterialViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridViewElements.ItemsSource = list;
-                    dataGridViewElements.Columns[0].Visibility = Visibility.Hidden;
-                    dataGridViewElements.Columns[1].Width = DataGridLength.Auto;
+                    List<MaterialViewModel> list = APIClient.GetElement<List<MaterialViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridViewElements.ItemsSource = list;
+                        dataGridViewElements.Columns[0].Visibility = Visibility.Hidden;
+                        dataGridViewElements.Columns[1].Width = DataGridLength.Auto;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace AbstractPrinteryWpf
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<MaterialWindow>();
+            var form = new MaterialWindow();
             if (form.ShowDialog() == true)
                 LoadData();
         }
@@ -60,8 +60,8 @@ namespace AbstractPrinteryWpf
         {
             if (dataGridViewElements.SelectedItem != null)
             {
-                var form = Container.Resolve<MaterialWindow>();
-                form.ID = ((MaterialViewModel)dataGridViewElements.SelectedItem).Number;
+                var form = new MaterialWindow();
+                form.Id = ((MaterialViewModel)dataGridViewElements.SelectedItem).Number;
                 if (form.ShowDialog() == true)
                     LoadData();
             }
@@ -77,7 +77,11 @@ namespace AbstractPrinteryWpf
                     int id = ((MaterialViewModel)dataGridViewElements.SelectedItem).Number;
                     try
                     {
-                        service.DelElement(id);
+                        var response = APIClient.PostRequest("api/Material/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {

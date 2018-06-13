@@ -1,10 +1,9 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -13,20 +12,14 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class TypographerWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly ITypographerSVC service;
+        public int Id { set { id = value; } }
 
         private int? id;
 
-        public TypographerWindow(ITypographerSVC service)
+        public TypographerWindow()
         {
             InitializeComponent();
             Loaded += TypographerWindow_Load;
-            this.service = service;
         }
 
         private void TypographerWindow_Load(object sender, EventArgs e)
@@ -35,9 +28,16 @@ namespace AbstractPrinteryWpf
             {
                 try
                 {
-                    TypographerViewModel view = service.GetElement(id.Value);
-                    if (view != null)
-                        textBoxFullName.Text = view.TypographerFIO;
+                    var response = APIClient.GetRequest("api/Typographer/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        var typographer = APIClient.GetElement<TypographerViewModel>(response);
+                        textBoxFullName.Text = typographer.TypographerFIO;
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -55,9 +55,10 @@ namespace AbstractPrinteryWpf
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new TypographerBildingModel
+                    response = APIClient.PostRequest("api/Typographer/UpdElement", new TypographerBildingModel
                     {
                         Number = id.Value,
                         TypographerFIO = textBoxFullName.Text
@@ -65,14 +66,21 @@ namespace AbstractPrinteryWpf
                 }
                 else
                 {
-                    service.AddElement(new TypographerBildingModel
+                    response = APIClient.PostRequest("api/Typographer/AddElement", new TypographerBildingModel
                     {
                         TypographerFIO = textBoxFullName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {

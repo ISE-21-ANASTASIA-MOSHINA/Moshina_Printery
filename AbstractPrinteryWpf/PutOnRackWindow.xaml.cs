@@ -1,11 +1,8 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,43 +11,47 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class PutOnRackWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IRackSVC serviceRack;
-
-        private readonly IMaterialSVC serviceMaterial;
-
-        private readonly IMainSVC serviceMain;
-
-        public PutOnRackWindow(IRackSVC serviceS, IMaterialSVC serviceC, IMainSVC serviceM)
+        public PutOnRackWindow()
         {
             InitializeComponent();
             Loaded += PutOnRackWindow_Load;
-            this.serviceRack = serviceS;
-            this.serviceMaterial = serviceC;
-            this.serviceMain = serviceM;
         }
 
         private void PutOnRackWindow_Load(object sender, EventArgs e)
         {
             try
             {
-                List<MaterialViewModel> listMaterial = serviceMaterial.GetList();
-                if (listMaterial != null)
+                var responseC = APIClient.GetRequest("api/Material/GetList");
+                if (responseC.Result.IsSuccessStatusCode)
                 {
-                    comboBoxMaterial.DisplayMemberPath = "MaterialName";
-                    comboBoxMaterial.SelectedValuePath = "Number";
-                    comboBoxMaterial.ItemsSource = listMaterial;
-                    comboBoxMaterial.SelectedItem = null;
+                    List<MaterialViewModel> list = APIClient.GetElement<List<MaterialViewModel>>(responseC);
+                    if (list != null)
+                    {
+                        comboBoxMaterial.DisplayMemberPath = "MaterialName";
+                        comboBoxMaterial.SelectedValuePath = "Number";
+                        comboBoxMaterial.ItemsSource = list;
+                        comboBoxMaterial.SelectedItem = null;
+                    }
                 }
-                List<RackViewModel> listRack = serviceRack.GetList();
-                if (listRack != null)
+                else
                 {
-                    comboBoxRack.DisplayMemberPath = "RackName";
-                    comboBoxRack.SelectedValuePath = "Number";
-                    comboBoxRack.ItemsSource = listRack;
-                    comboBoxRack.SelectedItem = null;
+                    throw new Exception(APIClient.GetError(responseC));
+                }
+                var responseS = APIClient.GetRequest("api/Rack/GetList");
+                if (responseS.Result.IsSuccessStatusCode)
+                {
+                    List<RackViewModel> list = APIClient.GetElement<List<RackViewModel>>(responseS);
+                    if (list != null)
+                    {
+                        comboBoxRack.DisplayMemberPath = "RackName";
+                        comboBoxRack.SelectedValuePath = "Number";
+                        comboBoxRack.ItemsSource = list;
+                        comboBoxRack.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(responseC));
                 }
             }
             catch (Exception ex)
@@ -68,26 +69,32 @@ namespace AbstractPrinteryWpf
             }
             if (comboBoxMaterial.SelectedItem == null)
             {
-                MessageBox.Show("Выберите ингредиент", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите заготовку", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             if (comboBoxRack.SelectedItem == null)
             {
-                MessageBox.Show("Выберите склад", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите базу", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try
             {
-                serviceMain.PutMaterialOnRack(new RackMaterialBindingModel
+                var response = APIClient.PostRequest("api/Main/PutMaterialOnRack", new RackMaterialBindingModel
                 {
                     MaterialNumber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
                     RackNumber = Convert.ToInt32(comboBoxRack.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Информация",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -102,4 +109,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-

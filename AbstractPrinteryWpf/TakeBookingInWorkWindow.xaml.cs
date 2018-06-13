@@ -1,11 +1,8 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryWpf
 {
@@ -14,23 +11,14 @@ namespace AbstractPrinteryWpf
     /// </summary>
     public partial class TakeBookingInWorkWindow : Window
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        public int ID { set { id = value; } }
-
-        private readonly ITypographerSVC serviceTypographer;
-
-        private readonly IMainSVC serviceMain;
+        public int Id { set { id = value; } }
 
         private int? id;
 
-        public TakeBookingInWorkWindow(ITypographerSVC serviceI, IMainSVC serviceM)
+        public TakeBookingInWorkWindow()
         {
             InitializeComponent();
             Loaded += TakeBookingInWorkWindow_Load;
-            this.serviceTypographer = serviceI;
-            this.serviceMain = serviceM;
         }
 
         private void TakeBookingInWorkWindow_Load(object sender, EventArgs e)
@@ -39,17 +27,24 @@ namespace AbstractPrinteryWpf
             {
                 if (!id.HasValue)
                 {
-                    MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Не указана заявка", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     Close();
                 }
-                List<TypographerViewModel> listTypographer = serviceTypographer.GetList();
-                if (listTypographer != null)
+                var response = APIClient.GetRequest("api/Typographer/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    comboBoxTypographer.DisplayMemberPath = "TypographerFIO";
-                    comboBoxTypographer.SelectedValuePath = "Id";
-                    comboBoxTypographer.ItemsSource = listTypographer;
-                    comboBoxTypographer.SelectedItem = null;
-
+                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
+                    if (list != null)
+                    {
+                        comboBoxTypographer.DisplayMemberPath = "TypographerFIO";
+                        comboBoxTypographer.SelectedValuePath = "Id";
+                        comboBoxTypographer.ItemsSource = list;
+                        comboBoxTypographer.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -62,19 +57,26 @@ namespace AbstractPrinteryWpf
         {
             if (comboBoxTypographer.SelectedItem == null)
             {
-                MessageBox.Show("Выберите повара", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Выберите рабочего", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             try
             {
-                serviceMain.TakeBookingInWork(new BookingBindingModel
+                var response = APIClient.PostRequest("api/Main/TakeBookingInWork", new BookingBindingModel
                 {
                     Number = id.Value,
                     TypographerNumber = ((TypographerViewModel)comboBoxTypographer.SelectedItem).Number,
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -89,5 +91,3 @@ namespace AbstractPrinteryWpf
         }
     }
 }
-
-
