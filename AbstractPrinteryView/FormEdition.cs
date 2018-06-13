@@ -166,7 +166,7 @@ namespace AbstractPrinteryView
                 }
                 if (id.HasValue)
                 {
-                    service.UpElement(new EdiitionBindingModel
+                    service.UpElement(new EdiitionViewModel
                     {
                         Number= id.Value,
                         EditionName = textBoxName.Text,
@@ -176,7 +176,7 @@ namespace AbstractPrinteryView
                 }
                 else
                 {
-                    service.AddElement(new EdiitionBindingModel
+                    service.AddElement(new EdiitionViewModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxPrice.Text),
@@ -192,6 +192,7 @@ namespace AbstractPrinteryView
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;

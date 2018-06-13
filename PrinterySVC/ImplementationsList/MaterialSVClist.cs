@@ -87,5 +87,6 @@ namespace PrinterySVC.ImplementationsList
             {
                 throw new Exception("Элемент не найден");
             }
+        }
     }
 }
