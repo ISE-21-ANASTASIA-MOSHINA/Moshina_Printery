@@ -1,35 +1,22 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormMaterial : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
         public int Id { set { id = value; } }
 
-        private readonly IMaterialSVC service;
-
         private int? id;
 
-        public FormMaterial(IMaterialSVC service)
+        public FormMaterial()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormComponent_Load(object sender, EventArgs e)
@@ -38,11 +25,17 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    MaterialViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Material/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.MaterialName;
+                        var component = APIClient.GetElement<MaterialViewModel>(response);
+                        textBoxName.Text = component.MaterialName;
                     }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
+                    
                 }
                 catch (Exception ex)
                 {
@@ -67,27 +60,38 @@ namespace AbstractPrinteryView
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
-            {
-                if (id.HasValue)
+            
+                try
                 {
-                    service.UpElement(new MaterialBindingModel
+                    Task<HttpResponseMessage> response;
+                    if (id.HasValue)
                     {
-                        Number = id.Value,
-                        MaterialName = textBoxName.Text
-                    });
-                }
-                else
-                {
-                    service.AddElement(new MaterialBindingModel
+                        response = APIClient.PostRequest("api/Material/UpdElement", new MaterialBindingModel
+                        {
+                            Number = id.Value,
+                            MaterialName = textBoxName.Text
+                        });
+                    }
+                    else
                     {
-                        MaterialName = textBoxName.Text
-                    });
+                        response = APIClient.PostRequest("api/Material/AddElement", new MaterialBindingModel
+                        {
+                            MaterialName = textBoxName.Text
+                        });
+                    }
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        DialogResult = DialogResult.OK;
+                        Close();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
-            }
+
+            
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);

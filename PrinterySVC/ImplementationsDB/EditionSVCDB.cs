@@ -69,7 +69,7 @@ namespace PrinterySVC.ImplementationsDB
             throw new Exception("Элемент не найден");
         }
 
-        public void AddElement(EdiitionBindingModel model)
+        public void AddElement(EditionBindingModel model)
         {
             using (var transaction = context.Database.BeginTransaction())
             {
@@ -83,7 +83,7 @@ namespace PrinterySVC.ImplementationsDB
                     element = new Edition
                     {
                         EditionName = model.EditionName,
-                        CostEdition = model.Coast
+                        CostEdition = model.Price
                     };
                     context.Editions.Add(element);
                     context.SaveChanges();
@@ -116,7 +116,7 @@ namespace PrinterySVC.ImplementationsDB
             }
         }
 
-        public void UpElement(EdiitionBindingModel model)
+        public void UpElement(EditionBindingModel model)
         {
             using (var transaction = context.Database.BeginTransaction())
             {
@@ -134,7 +134,7 @@ namespace PrinterySVC.ImplementationsDB
                         throw new Exception("Элемент не найден");
                     }
                     element.EditionName = model.EditionName;
-                    element.CostEdition = model.Coast;
+                    element.CostEdition = model.Price;
                     context.SaveChanges();
 
                     // обновляем существуюущие компоненты

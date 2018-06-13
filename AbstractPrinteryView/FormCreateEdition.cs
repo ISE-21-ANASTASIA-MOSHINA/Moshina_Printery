@@ -3,58 +3,56 @@ using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormCreateEdition : Form
     {
 
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly ICustomerSVC serviceC;
-
-        private readonly IEditionSVC serviceE;
-
-        private readonly IMainSVC serviceM;
-
-        public FormCreateEdition(ICustomerSVC serviceC, IEditionSVC serviceE, IMainSVC serviceM)
+        public FormCreateEdition()
         {
             InitializeComponent();
-            this.serviceC = serviceC;
-            this.serviceE = serviceE;
-            this.serviceM = serviceM;
         }
 
         private void FormCreateOrder_Load(object sender, EventArgs e)
         {
             try
             {
-                List<CustomerVievModel> listC = serviceC.GetList();
-                if (listC != null)
+                var responseC = APIClient.GetRequest("api/Customer/GetList");
+                if (responseC.Result.IsSuccessStatusCode)
                 {
-                    comboBoxCustomer.DisplayMember = "CustomerFIO";
-                    comboBoxCustomer.ValueMember = "Number";
-                    comboBoxCustomer.DataSource = listC;
-                    comboBoxCustomer.SelectedItem = null;
+                    List<CustomerVievModel> list = APIClient.GetElement<List<CustomerVievModel>>(responseC);
+                    if (list != null)
+                    {
+                        comboBoxCustomer.DisplayMember = "CustomerFIO";
+                        comboBoxCustomer.ValueMember = "Number";
+                        comboBoxCustomer.DataSource = list;
+                        comboBoxCustomer.SelectedItem = null;
+                    }
                 }
-                List<EditionViewModel> listP = serviceE.GetList();
-                if (listP != null)
+                else
                 {
-                    comboBoxEdition.DisplayMember = "EditionName";
-                    comboBoxEdition.ValueMember = "Number";
-                    comboBoxEdition.DataSource = listP;
-                    comboBoxEdition.SelectedItem = null;
+                    throw new Exception(APIClient.GetError(responseC));
+                }
+                var responseP = APIClient.GetRequest("api/Edition/GetList");
+                if (responseP.Result.IsSuccessStatusCode)
+                {
+                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(responseP);
+                    if (list != null)
+                    {
+                        comboBoxEdition.DisplayMember = "EditionName";
+                        comboBoxEdition.ValueMember = "Number";
+                        comboBoxEdition.DataSource = list;
+                        comboBoxEdition.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(responseP));
                 }
             }
+
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -68,9 +66,17 @@ namespace AbstractPrinteryView
                 try
                 {
                     int id = Convert.ToInt32(comboBoxEdition.SelectedValue);
-                    EditionViewModel edition = serviceE.GetElement(id);
-                    int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * edition.Cost).ToString();
+                    var responseP = APIClient.GetRequest("api/Edition/Get/" + id);
+                    if (responseP.Result.IsSuccessStatusCode)
+                    {
+                        EditionViewModel product = APIClient.GetElement<EditionViewModel>(responseP);
+                        int count = Convert.ToInt32(textBoxCount.Text);
+                        textBoxSum.Text = (count * (int)product.Cost).ToString();
+                    }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(responseP));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -108,16 +114,23 @@ namespace AbstractPrinteryView
             }
             try
             {
-                serviceM.CreateBooking(new BookingBindingModel
+                var response = APIClient.PostRequest("api/Main/CreateBooking", new BookingBindingModel
                 {
                     CustomerNumber = Convert.ToInt32(comboBoxCustomer.SelectedValue),
                     EditionNumber = Convert.ToInt32(comboBoxEdition.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text),
-                    Sum = Convert.ToDecimal(textBoxSum.Text)
+                    Sum = Convert.ToInt32(textBoxSum.Text)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {
