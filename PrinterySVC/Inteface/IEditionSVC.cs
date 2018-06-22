@@ -1,10 +1,6 @@
 ﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PrinterySVC.Inteface
 {
@@ -12,8 +8,8 @@ namespace PrinterySVC.Inteface
     {
         List<EditionViewModel> GetList();
         EditionViewModel GetElement(int number);
-        void AddElement(EdiitionBindingModel model);
-        void UpElement(EdiitionBindingModel model);
+        void AddElement(EditionBindingModel model);
+        void UpElement(EditionBindingModel model);
         void DelElement(int number);
     }
 }
