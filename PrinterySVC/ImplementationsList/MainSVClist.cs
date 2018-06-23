@@ -21,68 +21,32 @@ namespace PrinterySVC.ImplementationsList
 
         public List<BookingViewModel> GetList()
         {
-            List<BookingViewModel> result = new List<BookingViewModel>();
-            for (int i = 0; i < source.Bookings.Count; ++i)
-            {
-                string customerFIO = string.Empty;
-                for (int j = 0; j < source.Customers.Count; ++j)
+            List<BookingViewModel> result = source.Bookings
+                .Select(rec => new BookingViewModel
                 {
-                    if (source.Customers[j].Number == source.Bookings[i].CustomerNumber)
-                    {
-                        customerFIO = source.Customers[j].CustomerFIO;
-                        break;
-                    }
-                }
-                string editionName = string.Empty;
-                for (int j = 0; j < source.Editions.Count; ++j)
-                {
-                    if (source.Editions[j].Number == source.Bookings[i].EditionNumber)
-                    {
-                        editionName = source.Editions[j].EditionName;
-                        break;
-                    }
-                }
-                string typographerFIO = string.Empty;
-                if (source.Bookings[i].TypographerNumber.HasValue)
-                {
-                    for (int j = 0; j < source.Typographers.Count; ++j)
-                    {
-                        if (source.Typographers[j].Number == source.Bookings[i].TypographerNumber.Value)
-                        {
-                            typographerFIO = source.Typographers[j].TypographerFIO;
-                            break;
-                        }
-                    }
-                }
-                result.Add(new BookingViewModel
-                {
-                    Number = source.Bookings[i].Number,
-                    CustomerNumber = source.Bookings[i].CustomerNumber,
-                    CustomerFIO = customerFIO,
-                    EditionNumber = source.Bookings[i].EditionNumber,
-                    EditionName = editionName,
-                    TypographerNumber = source.Bookings[i].TypographerNumber,
-                    TypographerName = typographerFIO,
-                    Count = source.Bookings[i].Count,
-                    Sum = source.Bookings[i].Sum,
-                    DateCreate = source.Bookings[i].DateCreate.ToLongDateString(),
-                    DateTypograph = source.Bookings[i].DateTypographer?.ToLongDateString(),
-                    Status = source.Bookings[i].Status.ToString()
-                });
-            }
+                    Number = rec.Number,
+                    CustomerNumber = rec.CustomerNumber,
+                    EditionNumber = rec.EditionNumber,
+                    TypographerNumber = rec.TypographerNumber,
+                    DateCreate = rec.DateCreate.ToLongDateString(),
+                    DateTypograph = rec.DateTypographer?.ToLongDateString(),
+                    Status = rec.Status.ToString(),
+                    Count = rec.Count,
+                    Sum = rec.Sum,
+                    CustomerFIO = source.Customers
+                                    .FirstOrDefault(recC => recC.Number == rec.CustomerNumber)?.CustomerFIO,
+                    EditionName = source.Editions
+                                    .FirstOrDefault(recP => recP.Number == rec.EditionNumber)?.EditionName,
+                    TypographerName = source.Typographers
+                                    .FirstOrDefault(recI => recI.Number == rec.TypographerNumber)?.TypographerFIO
+                })
+                .ToList();
             return result;
         }
 
         public void CreateBooking(BookingBindingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Bookings.Count; ++i)
-            {
-                if (source.Bookings[i].Number > maxNumber)
-                {
-                    maxNumber = source.Customers[i].Number;
-                }
-            }
+            int maxNumber = source.Bookings.Count > 0 ? source.Bookings.Max(rec => rec.Number) : 0;
             source.Bookings.Add(new Booking
             {
                 Number = maxNumber + 1,
@@ -97,134 +61,92 @@ namespace PrinterySVC.ImplementationsList
 
         public void TakeBookingInWork(BookingBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Bookings.Count; ++i)
-            {
-                if (source.Bookings[i].Number == model.Number)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Booking element = source.Bookings.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             // смотрим по количеству компонентов на складах
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
+            var productMaterials = source.EditionMaterials.Where(rec => rec.EditionNamber == element.EditionNumber);
+            foreach (var productMaterial in productMaterials)
             {
-                if (source.EditionMaterials[i].EditionNamber == source.Bookings[index].EditionNumber)
+                int countOnRacks = source.RackMaterials
+                                            .Where(rec => rec.MaterialNumber == productMaterial.MaterialNamber)
+                                            .Sum(rec => rec.Count);
+                if (countOnRacks < productMaterial.Count * element.Count)
                 {
-                    int countOnStocks = 0;
-                    for (int j = 0; j < source.RackMaterials.Count; ++j)
-                    {
-                        if (source.RackMaterials[j].MaterialNamber == source.EditionMaterials[i].MaterialNamber)
-                        {
-                            countOnStocks += source.RackMaterials[j].Count;
-                        }
-                    }
-                    if (countOnStocks < source.EditionMaterials[i].Count * source.Bookings[index].Count)
-                    {
-                        for (int j = 0; j < source.Materials.Count; ++j)
-                        {
-                            if (source.Materials[j].Number == source.EditionMaterials[i].MaterialNamber)
-                            {
-                                throw new Exception("Не достаточно компонента " + source.Materials[j].MaterialName +
-                                    " требуется " + source.EditionMaterials[i].Count * source.Bookings[index].Count + ", в наличии " + countOnStocks);
-                            }
-                        }
-                    }
+                    var componentName = source.Materials
+                                    .FirstOrDefault(rec => rec.Number == productMaterial.MaterialNamber);
+                    throw new Exception("Не достаточно компонента " + componentName?.MaterialName +
+                        " требуется " + productMaterial.Count + ", в наличии " + countOnRacks);
                 }
             }
             // списываем
-            for (int i = 0; i < source.EditionMaterials.Count; ++i)
+            foreach (var productMaterial in productMaterials)
             {
-                if (source.EditionMaterials[i].EditionNamber == source.Bookings[index].EditionNumber)
+                int countOnRacks = productMaterial.Count * element.Count;
+                var stockMaterials = source.RackMaterials
+                                            .Where(rec => rec.MaterialNamber == productMaterial.MaterialNamber);
+                foreach (var stockMaterial in stockMaterials)
                 {
-                    int countOnStocks = source.EditionMaterials[i].Count * source.Bookings[index].Count;
-                    for (int j = 0; j < source. RackMaterials.Count; ++j)
+                    // компонентов на одном слкаде может не хватать
+                    if (stockMaterial.Count >= countOnRacks)
                     {
-                        if (source.RackMaterials[j].MaterialNamber == source.EditionMaterials[i].MaterialNamber)
-                        {
-                            // компонентов на одном слкаде может не хватать
-                            if (source.RackMaterials[j].Count >= countOnStocks)
-                            {
-                                source.RackMaterials[j].Count -= countOnStocks;
-                                break;
-                            }
-                            else
-                            {
-                                countOnStocks -= source.RackMaterials[j].Count;
-                                source.RackMaterials[j].Count = 0;
-                            }
-                        }
+                        stockMaterial.Count -= countOnRacks;
+                        break;
+                    }
+                    else
+                    {
+                        countOnRacks -= stockMaterial.Count;
+                        stockMaterial.Count = 0;
                     }
                 }
             }
-            source.Bookings[index].TypographerNumber = model.TypographerNumber;
-            source.Bookings[index].DateTypographer = DateTime.Now;
-            source.Bookings[index].Status = BookingStatus.Выполняется;
+            element.TypographerNumber = model.TypographerNumber;
+            element.DateTypographer = DateTime.Now;
+            element.Status = BookingStatus.Выполняется;
         }
 
-        public void FinishBooking(int number)
+        public void FinishBooking(int id)
         {
-            int index = -1;
-            for (int i = 0; i < source.Bookings.Count; ++i)
-            {
-                if (source.Customers[i].Number == number)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Booking element = source.Bookings.FirstOrDefault(rec => rec.Number == id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Bookings[index].Status = BookingStatus.Готов;
+            element.Status = BookingStatus.Готов;
         }
 
-        public void PayBooking(int number)
+        public void PayBooking(int id)
         {
-            int index = -1;
-            for (int i = 0; i < source.Bookings.Count; ++i)
-            {
-                if (source.Customers[i].Number== number)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Booking element = source.Bookings.FirstOrDefault(rec => rec.Number == id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Bookings[index].Status = BookingStatus.Оплачен;
+            element.Status = BookingStatus.Оплачен;
         }
 
         public void PutMaterialOnRack(RackMaterialBindingModel model)
         {
-            int maxNumber= 0;
-            for (int i = 0; i < source.RackMaterials.Count; ++i)
+            RackMaterial element = source.RackMaterials
+                                                .FirstOrDefault(rec => rec.RackNamber == model.RackNamber &&
+                                                                    rec.MaterialNamber == model.MaterialNamber);
+            if (element != null)
             {
-                if (source.RackMaterials[i].RackNamber == model.RackNamber &&
-                    source.RackMaterials[i].RackNamber == model.MaterialNamber)
-                {
-                    source.RackMaterials[i].Count += model.Count;
-                    return;
-                }
-                if (source.RackMaterials[i].Namber > maxNumber)
-                {
-                    maxNumber = source.RackMaterials[i].Namber;
-                }
+                element.Count += model.Count;
             }
-            source.RackMaterials.Add(new RackMaterial
+            else
             {
-                Namber = ++maxNumber,
-                RackNamber = model.RackNamber,
-                MaterialNamber = model.MaterialNamber,
-                Count = model.Count
-            });
+                int maxNumber = source.RackMaterials.Count > 0 ? source.RackMaterials.Max(rec => rec.Namber) : 0;
+                source.RackMaterials.Add(new RackMaterial
+                {
+                    Namber = ++maxNumber,
+                    RackNamber = model.RackNamber,
+                    MaterialNamber = model.MaterialNamber,
+                    Count = model.Count
+                });
+            }
         }
 
     }

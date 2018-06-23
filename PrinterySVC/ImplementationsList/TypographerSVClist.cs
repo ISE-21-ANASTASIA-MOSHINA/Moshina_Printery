@@ -21,48 +21,38 @@ namespace PrinterySVC.ImplementationsList
 
         public List<TypographerViewModel> GetList()
         {
-            List<TypographerViewModel> result = new List<TypographerViewModel>();
-            for (int i = 0; i < source.Typographers.Count; ++i)
-            {
-                result.Add(new TypographerViewModel
+            List<TypographerViewModel> result = source.Typographers
+                .Select(rec => new TypographerViewModel
                 {
-                    Number = source.Typographers[i].Number,
-                    TypographerFIO = source.Typographers[i].TypographerFIO
-                });
-            }
+                    Number = rec.Number,
+                    TypographerFIO = rec.TypographerFIO
+                })
+                .ToList();
             return result;
         }
 
-        public TypographerViewModel GetElement(int number)
+        public TypographerViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Typographers.Count; ++i)
+            Typographer element = source.Typographers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Typographers[i].Number == number)
+                return new TypographerViewModel
                 {
-                    return new TypographerViewModel
-                    {
-                        Number = source.Typographers[i].Number,
-                        TypographerFIO = source.Typographers[i].TypographerFIO
-                    };
-                }
+                    Number = element.Number,
+                    TypographerFIO = element.TypographerFIO
+                };
             }
             throw new Exception("Элемент не найден");
         }
 
         public void AddElement(TypographerBildingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Typographers.Count; ++i)
+            Typographer element = source.Typographers.FirstOrDefault(rec => rec.TypographerFIO == model.TypographerFIO);
+            if (element != null)
             {
-                if (source.Typographers[i].Number > maxNumber)
-                {
-                    maxNumber = source.Typographers[i].Number;
-                }
-                if (source.Typographers[i].TypographerFIO == model.TypographerFIO)
-                {
-                    throw new Exception("Уже есть сотрудник с таким ФИО");
-                }
+                throw new Exception("Уже есть сотрудник с таким ФИО");
             }
+            int maxNumber = source.Typographers.Count > 0 ? source.Typographers.Max(rec => rec.Number) : 0;
             source.Typographers.Add(new Typographer
             {
                 Number = maxNumber + 1,
@@ -72,37 +62,31 @@ namespace PrinterySVC.ImplementationsList
 
         public void UpElement(TypographerBildingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Typographers.Count; ++i)
+            Typographer element = source.Typographers.FirstOrDefault(rec =>
+                                        rec.TypographerFIO == model.TypographerFIO && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Typographers[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Typographers[i].TypographerFIO == model.TypographerFIO &&
-                    source.Typographers[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть сотрудник с таким ФИО");
-                }
+                throw new Exception("Уже есть сотрудник с таким ФИО");
             }
-            if (index == -1)
+            element = source.Typographers.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Typographers[index].TypographerFIO = model.TypographerFIO;
+            element.TypographerFIO = model.TypographerFIO;
         }
 
-        public void DelElement(int number)
+        public void DelElement(int id)
         {
-            for (int i = 0; i < source.Typographers.Count; ++i)
+            Typographer element = source.Typographers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Typographers[i].Number == number)
-                {
-                    source.Typographers.RemoveAt(i);
-                    return;
-                }
+                source.Typographers.Remove(element);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
         }
     }
 }

@@ -45,7 +45,6 @@ namespace AbstractPrinteryView
             this.labelFIO.Size = new System.Drawing.Size(46, 17);
             this.labelFIO.TabIndex = 1;
             this.labelFIO.Text = "ФИО:";
-            this.labelFIO.Click += new System.EventHandler(this.labelFIO_Click);
             // 
             // textBoxFIO
             // 
@@ -54,7 +53,6 @@ namespace AbstractPrinteryView
             this.textBoxFIO.Name = "textBoxFIO";
             this.textBoxFIO.Size = new System.Drawing.Size(288, 22);
             this.textBoxFIO.TabIndex = 2;
-            this.textBoxFIO.TextChanged += new System.EventHandler(this.textBoxFIO_TextChanged);
             // 
             // buttonSave
             // 

@@ -21,48 +21,38 @@ namespace PrinterySVC.ImplementationsList
 
         public List<MaterialViewModel> GetList()
         {
-            List<MaterialViewModel> result = new List<MaterialViewModel>();
-            for (int i = 0; i < source.Materials.Count; ++i)
-            {
-                result.Add(new MaterialViewModel
+            List<MaterialViewModel> result = source.Materials
+                .Select(rec => new MaterialViewModel
                 {
-                    Number = source.Materials[i].Number,
-                    MaterialName = source.Materials[i].MaterialName
-                });
-            }
+                    Number = rec.Number,
+                    MaterialName = rec.MaterialName
+                })
+                .ToList();
             return result;
         }
 
-        public MaterialViewModel GetElement(int number)
+        public MaterialViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Materials.Count; ++i)
+            Material element = source.Materials.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Materials[i].Number == number)
+                return new MaterialViewModel
                 {
-                    return new MaterialViewModel
-                    {
-                        Number = source.Materials[i].Number,
-                        MaterialName = source.Materials[i].MaterialName
-                    };
-                }
+                    Number = element.Number,
+                    MaterialName = element.MaterialName
+                };
             }
-            throw new Exception("Материал не найден");
+            throw new Exception("Элемент не найден");
         }
 
         public void AddElement(MaterialBindingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Materials.Count; ++i)
+            Material element = source.Materials.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
+            if (element != null)
             {
-                if (source.Materials[i].Number > maxNumber)
-                {
-                    maxNumber = source.Materials[i].Number;
-                }
-                if (source.Materials[i].MaterialName == model.MaterialName)
-                {
-                    throw new Exception("Уже есть материал с таким названием");
-                }
+                throw new Exception("Уже есть компонент с таким названием");
             }
+            int maxNumber = source.Materials.Count > 0 ? source.Materials.Max(rec => rec.Number) : 0;
             source.Materials.Add(new Material
             {
                 Number = maxNumber + 1,
@@ -72,37 +62,31 @@ namespace PrinterySVC.ImplementationsList
 
         public void UpElement(MaterialBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Materials.Count; ++i)
+            Material element = source.Materials.FirstOrDefault(rec =>
+                                        rec.MaterialName == model.MaterialName && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Materials[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Materials[i].MaterialName == model.MaterialName &&
-                    source.Materials[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть материал с таким названием");
-                }
+                throw new Exception("Уже есть компонент с таким названием");
             }
-            if (index == -1)
+            element = source.Materials.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Materials[index].MaterialName = model.MaterialName;
+            element.MaterialName = model.MaterialName;
         }
 
-        public void DelElement(int number)
+        public void DelElement(int id)
         {
-            for (int i = 0; i < source.Materials.Count; ++i)
+            Material element = source.Materials.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Materials[i].Number == number)
-                {
-                    source.Materials.RemoveAt(i);
-                    return;
-                }
+                source.Materials.Remove(element);
             }
-            throw new Exception("Материал не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
         }
     }
 }

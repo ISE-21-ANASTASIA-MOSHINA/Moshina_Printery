@@ -21,48 +21,39 @@ namespace PrinterySVC.ImplementationsList
 
         public List<CustomerVievModel> GetList()
         {
-            List<CustomerVievModel> result = new List<CustomerVievModel>();
-            for (int i = 0; i < source.Customers.Count; ++i)
-            {
-                result.Add(new CustomerVievModel
+           
+            List<CustomerVievModel> result = source.Customers
+                .Select(rec => new CustomerVievModel
                 {
-                    Number = source.Customers[i].Number,
-                    CustomerFIO = source.Customers[i].CustomerFIO
-                });
-            }
+                    Number = rec.Number,
+                    CustomerFIO = rec.CustomerFIO
+                })
+                .ToList();
             return result;
         }
 
-        public CustomerVievModel GetElement(int number)
+        public CustomerVievModel GetElement(int id)
         {
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Customers[i].Number == number)
+                return new CustomerVievModel
                 {
-                    return new CustomerVievModel
-                    {
-                        Number = source.Customers[i].Number,
-                        CustomerFIO = source.Customers[i].CustomerFIO
-                    };
-                }
+                    Number = element.Number,
+                    CustomerFIO = element.CustomerFIO
+                };
             }
             throw new Exception("Элемент не найден");
         }
 
         public void AddElement(CustomerBindingModel model)
         {
-            int maxNumber = 0;
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec => rec.CustomerFIO == model.CustomerFIO);
+            if (element != null)
             {
-                if (source.Customers[i].Number > maxNumber)
-                {
-                    maxNumber = source.Customers[i].Number;
-                }
-                if (source.Customers[i].CustomerFIO == model.CustomerFIO)
-                {
-                    throw new Exception("Уже есть клиент с таким ФИО");
-                }
+                throw new Exception("Уже есть клиент с таким ФИО");
             }
+            int maxNumber = source.Customers.Count > 0 ? source.Customers.Max(rec => rec.Number) : 0;
             source.Customers.Add(new Customer
             {
                 Number = maxNumber + 1,
@@ -72,37 +63,31 @@ namespace PrinterySVC.ImplementationsList
 
         public void UpElement(CustomerBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec =>
+                                    rec.CustomerFIO == model.CustomerFIO && rec.Number != model.Number);
+            if (element != null)
             {
-                if (source.Customers[i].Number == model.Number)
-                {
-                    index = i;
-                }
-                if (source.Customers[i].CustomerFIO == model.CustomerFIO &&
-                    source.Customers[i].Number != model.Number)
-                {
-                    throw new Exception("Уже есть клиент с таким ФИО");
-                }
+                throw new Exception("Уже есть клиент с таким ФИО");
             }
-            if (index == -1)
+            element = source.Customers.FirstOrDefault(rec => rec.Number == model.Number);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Customers[index].CustomerFIO = model.CustomerFIO;
+            element.CustomerFIO = model.CustomerFIO;
         }
 
-        public void DelElement(int number)
+        public void DelElement(int id)
         {
-            for (int i = 0; i < source.Customers.Count; ++i)
+            Customer element = source.Customers.FirstOrDefault(rec => rec.Number == id);
+            if (element != null)
             {
-                if (source.Customers[i].Number == number)
-                {
-                    source.Customers.RemoveAt(i);
-                    return;
-                }
+                source.Customers.Remove(element);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
         }
     }
 }
