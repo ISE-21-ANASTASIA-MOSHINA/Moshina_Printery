@@ -54,7 +54,7 @@ namespace AbstractPrinteryView
 
         private void buttonSave_Click_1(object sender, EventArgs e)
         {
-             if (string.IsNullOrEmpty(textBoxName.Text))
+            if (string.IsNullOrEmpty(textBoxName.Text))
             {
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
