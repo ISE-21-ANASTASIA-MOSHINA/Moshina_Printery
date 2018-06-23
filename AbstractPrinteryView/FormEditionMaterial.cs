@@ -88,10 +88,5 @@ namespace AbstractPrinteryView
             DialogResult = DialogResult.Cancel;
             Close();
         }
-
-        private void comboBoxMaterial_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
