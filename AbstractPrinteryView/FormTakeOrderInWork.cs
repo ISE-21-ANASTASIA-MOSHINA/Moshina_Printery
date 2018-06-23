@@ -105,10 +105,5 @@ namespace AbstractPrinteryView
         {
             Close();
         }
-
-        private void comboBoxTypographer_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
