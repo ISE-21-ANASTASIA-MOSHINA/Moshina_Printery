@@ -63,11 +63,12 @@ namespace AbstractPrinteryView
         {
              if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = new FormCustumer
+                var form = new FormCustumer();
+                form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
+                if (form.ShowDialog() == DialogResult.OK)
                 {
-                   Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value)
-                };
-                form.ShowDialog();
+                    LoadData();
+                }
             }
         }
 
