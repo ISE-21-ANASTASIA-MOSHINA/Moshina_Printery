@@ -54,48 +54,43 @@ namespace AbstractPrinteryView
 
         private void buttonSave_Click_1(object sender, EventArgs e)
         {
-
-            if (string.IsNullOrEmpty(textBoxName.Text))
+             if (string.IsNullOrEmpty(textBoxName.Text))
             {
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            
-                try
-                {
-                    Task<HttpResponseMessage> response;
-                    if (id.HasValue)
-                    {
-                        response = APIClient.PostRequest("api/Material/UpdElement", new MaterialBindingModel
-                        {
-                            Number = id.Value,
-                            MaterialName = textBoxName.Text
-                        });
-                    }
-                    else
-                    {
-                        response = APIClient.PostRequest("api/Material/AddElement", new MaterialBindingModel
-                        {
-                            MaterialName = textBoxName.Text
-                        });
-                    }
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        DialogResult = DialogResult.OK;
-                        Close();
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                }
-
-            
-            catch (Exception ex)
+            string name = textBoxName.Text;
+            Task task;
+            if (id.HasValue)
             {
-                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                task = Task.Run(() => APIClient.PostRequestData("api/Material/UpdElement", new MaterialBindingModel
+                {
+                    Number = id.Value,
+                    MaterialName = name
+                }));
             }
+            else
+            {
+                task = Task.Run(() => APIClient.PostRequestData("api/Material/AddElement", new MaterialBindingModel
+                {
+                    MaterialName = name
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
+        }
         }
     }
 }
