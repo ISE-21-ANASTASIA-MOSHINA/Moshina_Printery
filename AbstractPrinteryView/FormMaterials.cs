@@ -92,7 +92,6 @@ namespace AbstractPrinteryView
                     LoadData();
                 }
             }
-
         }
 
         private void buttonRef_Click(object sender, EventArgs e)
