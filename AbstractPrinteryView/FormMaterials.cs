@@ -74,7 +74,7 @@ namespace AbstractPrinteryView
 
         private void buttonDel_Click(object sender, EventArgs e)
         {
-           if (dataGridView.SelectedRows.Count == 1)
+            if (dataGridView.SelectedRows.Count == 1)
             {
                 if (MessageBox.Show("Удалить запись", "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
