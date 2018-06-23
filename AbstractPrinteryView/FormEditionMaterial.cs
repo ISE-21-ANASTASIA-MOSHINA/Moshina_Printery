@@ -70,7 +70,6 @@ namespace AbstractPrinteryView
                     MaterialName = name
                 }));
             }
-
             task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
                 TaskContinuationOptions.OnlyOnRanToCompletion);
             task.ContinueWith((prevTask) =>
