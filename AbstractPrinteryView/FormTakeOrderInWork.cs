@@ -1,37 +1,21 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormTakeOrderInWork : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
         public int Number { set { id = value; } }
 
-        private readonly ITypographerSVC serviceT;
-
-        private readonly IMainSVC serviceM;
-
         private int? id;
 
-        public FormTakeOrderInWork(ITypographerSVC serviceT, IMainSVC serviceM)
+        public FormTakeOrderInWork()
         {
             InitializeComponent();
-            this.serviceT = serviceT;
-            this.serviceM = serviceM;
         }
 
         private void FormTakeOrderInWork_Load(object sender, EventArgs e)
@@ -43,13 +27,21 @@ namespace AbstractPrinteryView
                     MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Close();
                 }
-                List<TypographerViewModel> listI = serviceT.GetList();
-                if (listI != null)
+                var response = APIClient.GetRequest("api/Typographer/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    comboBoxTypographer.DisplayMember = "TypographerFIO";
-                    comboBoxTypographer.ValueMember = "Number";
-                    comboBoxTypographer.DataSource = listI;
-                    comboBoxTypographer.SelectedItem = null;
+                    List<TypographerViewModel> list = APIClient.GetElement<List<TypographerViewModel>>(response);
+                    if (list != null)
+                    {
+                        comboBoxTypographer.DisplayMember = "TypographerFIO";
+                        comboBoxTypographer.ValueMember = "Number";
+                        comboBoxTypographer.DataSource = list;
+                        comboBoxTypographer.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -67,14 +59,21 @@ namespace AbstractPrinteryView
             }
             try
             {
-                serviceM.TakeBookingInWork(new BookingBindingModel
+                var response = APIClient.PostRequest("api/Main/TakeBookingInWork", new BookingBindingModel
                 {
                     Number = id.Value,
                     TypographerNumber = Convert.ToInt32(comboBoxTypographer.SelectedValue)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {

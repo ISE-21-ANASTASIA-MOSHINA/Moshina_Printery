@@ -1,14 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using PrinterySVC.BindingModel;
 
@@ -16,21 +8,10 @@ namespace AbstractPrinteryView
 {
     public partial class FormPutOnRack : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
-        private readonly IRackSVC serviceS;
-
-        private readonly IMaterialSVC serviceC;
-
-        private readonly IMainSVC serviceM;
-
-        public FormPutOnRack(IRackSVC serviceS, IMaterialSVC serviceC, IMainSVC serviceM)
+        public FormPutOnRack()
         {
             InitializeComponent();
-            this.serviceS = serviceS;
-            this.serviceC = serviceC;
-            this.serviceM = serviceM;
         }
 
         private void FormPutOnRack_Load(object sender, EventArgs e)
@@ -38,21 +19,37 @@ namespace AbstractPrinteryView
 
             try
             {
-                List<MaterialViewModel> listC = serviceC.GetList();
-                if (listC != null)
+                var responseC = APIClient.GetRequest("api/Material/GetList");
+                if (responseC.Result.IsSuccessStatusCode)
                 {
-                    comboBoxMaterial.DisplayMember = "MaterialName";
-                    comboBoxMaterial.ValueMember = "Number";
-                    comboBoxMaterial.DataSource = listC;
-                    comboBoxMaterial.SelectedItem = null;
+                    List<MaterialViewModel> list = APIClient.GetElement<List<MaterialViewModel>>(responseC);
+                    if (list != null)
+                    {
+                        comboBoxMaterial.DisplayMember = "MaterialName";
+                        comboBoxMaterial.ValueMember = "Number";
+                        comboBoxMaterial.DataSource = list;
+                        comboBoxMaterial.SelectedItem = null;
+                    }
                 }
-                List<RackViewModel> listS = serviceS.GetList();
-                if (listS != null)
+                else
                 {
-                    comboBoxRack.DisplayMember = "RackName";
-                    comboBoxRack.ValueMember = "Number";
-                    comboBoxRack.DataSource = listS;
-                    comboBoxRack.SelectedItem = null;
+                    throw new Exception(APIClient.GetError(responseC));
+                }
+                var responseS = APIClient.GetRequest("api/Rack/GetList");
+                if (responseS.Result.IsSuccessStatusCode)
+                {
+                    List<RackViewModel> list = APIClient.GetElement<List<RackViewModel>>(responseS);
+                    if (list != null)
+                    {
+                        comboBoxRack.DisplayMember = "RackName";
+                        comboBoxRack.ValueMember = "Number";
+                        comboBoxRack.DataSource = list;
+                        comboBoxRack.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(responseC));
                 }
             }
             catch (Exception ex)
@@ -83,15 +80,22 @@ namespace AbstractPrinteryView
             }
             try
             {
-                serviceM.PutMaterialOnRack(new RackMaterialBindingModel
+                var response = APIClient.PostRequest("api/Main/PutMaterialOnRack", new RackMaterialBindingModel
                 {
                     MaterialNamber = Convert.ToInt32(comboBoxMaterial.SelectedValue),
                     RackNamber = Convert.ToInt32(comboBoxRack.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
             }
             catch (Exception ex)
             {

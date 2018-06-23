@@ -1,29 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
+using PrinterySVC.BindingModel;
 
 namespace AbstractPrinteryView
 {
     public partial class FormMaterials : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IMaterialSVC service;
-
-        public FormMaterials(IMaterialSVC service)
+        public FormMaterials()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormMaterials_Load(object sender, EventArgs e)
@@ -35,13 +22,24 @@ namespace AbstractPrinteryView
         {
             try
             {
-                List<MaterialViewModel> list = service.GetList();
-                if (list != null)
+
+
+                var response = APIClient.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<MaterialViewModel> list = APIClient.GetElement<List<MaterialViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
                 }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
+                }
+
             }
             catch (Exception ex)
             {
@@ -51,7 +49,7 @@ namespace AbstractPrinteryView
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormMaterial>();
+            var form = new FormMaterial();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -63,7 +61,7 @@ namespace AbstractPrinteryView
 
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormMaterial>();
+                var form = new FormMaterial();
                 form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 if (form.ShowDialog() == DialogResult.OK)
                 {

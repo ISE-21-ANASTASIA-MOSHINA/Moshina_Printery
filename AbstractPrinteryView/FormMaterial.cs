@@ -1,35 +1,22 @@
 ﻿using PrinterySVC.BindingModel;
-using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormMaterial : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
         public int Id { set { id = value; } }
 
-        private readonly IMaterialSVC service;
-
         private int? id;
 
-        public FormMaterial(IMaterialSVC service)
+        public FormMaterial()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormComponent_Load(object sender, EventArgs e)
@@ -38,11 +25,17 @@ namespace AbstractPrinteryView
             {
                 try
                 {
-                    MaterialViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APIClient.GetRequest("api/Material/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.MaterialName;
+                        var component = APIClient.GetElement<MaterialViewModel>(response);
+                        textBoxName.Text = component.MaterialName;
                     }
+                    else
+                    {
+                        throw new Exception(APIClient.GetError(response));
+                    }
+                    
                 }
                 catch (Exception ex)
                 {

@@ -1,29 +1,17 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
+using PrinterySVC.Inteface;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormRacks : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IRackSVC service;
-
-        public FormRacks(IRackSVC service)
+        public FormRacks()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormRacks_Load(object sender, EventArgs e)
@@ -35,12 +23,20 @@ namespace AbstractPrinteryView
         {
             try
             {
-                List<RackViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Rack/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<RackViewModel> list = APIClient.GetElement<List<RackViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,7 +47,7 @@ namespace AbstractPrinteryView
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormRack>();
+            var form = new FormRack();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -62,7 +58,7 @@ namespace AbstractPrinteryView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormRack>();
+                var form = new FormRack();
                 form.Number = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -80,7 +76,11 @@ namespace AbstractPrinteryView
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                     try
                     {
-                        service.DelElement(id);
+                        var response = APIClient.PostRequest("api/Rack/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {

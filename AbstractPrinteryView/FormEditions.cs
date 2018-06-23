@@ -1,29 +1,17 @@
-﻿using PrinterySVC.Inteface;
+﻿using PrinterySVC.BindingModel;
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractPrinteryView
 {
     public partial class FormEditions : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
 
-        private readonly IEditionSVC service;
-
-        public FormEditions(IEditionSVC service)
+        public FormEditions()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormEditions_Load(object sender, EventArgs e)
@@ -35,12 +23,20 @@ namespace AbstractPrinteryView
         {
             try
             {
-                List<EditionViewModel> list = service.GetList();
-                if (list != null)
+                var response = APIClient.GetRequest("api/Edition/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APIClient.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,7 +47,7 @@ namespace AbstractPrinteryView
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormEdition>();
+            var form = new FormEdition();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -80,7 +76,11 @@ namespace AbstractPrinteryView
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                     try
                     {
-                        service.DelElement(id);
+                        var response = APIClient.PostRequest("api/Edition/DelElement", new CustomerBindingModel { Number = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APIClient.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {
