@@ -48,7 +48,7 @@ namespace AbstractPrinteryView
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
-             if (string.IsNullOrEmpty(textBoxName.Text))
+              if (string.IsNullOrEmpty(textBoxName.Text))
             {
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -70,6 +70,7 @@ namespace AbstractPrinteryView
                     MaterialName = name
                 }));
             }
+
             task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
                 TaskContinuationOptions.OnlyOnRanToCompletion);
             task.ContinueWith((prevTask) =>
