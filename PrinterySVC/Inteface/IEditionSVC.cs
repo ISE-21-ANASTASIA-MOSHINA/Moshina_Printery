@@ -12,8 +12,8 @@ namespace PrinterySVC.Inteface
     {
         List<EditionViewModel> GetList();
         EditionViewModel GetElement(int number);
-        void AddElement(EdiitionViewModel model);
-        void UpElement(EdiitionViewModel model);
+        void AddElement(EdiitionBindingModel model);
+        void UpElement(EdiitionBindingModel model);
         void DelElement(int number);
     }
 }

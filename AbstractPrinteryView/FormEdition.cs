@@ -166,7 +166,7 @@ namespace AbstractPrinteryView
                 }
                 if (id.HasValue)
                 {
-                    service.UpElement(new EdiitionViewModel
+                    service.UpElement(new EdiitionBindingModel
                     {
                         Number= id.Value,
                         EditionName = textBoxName.Text,
@@ -176,7 +176,7 @@ namespace AbstractPrinteryView
                 }
                 else
                 {
-                    service.AddElement(new EdiitionViewModel
+                    service.AddElement(new EdiitionBindingModel
                     {
                         EditionName = textBoxName.Text,
                         Coast = Convert.ToInt32(textBoxPrice.Text),

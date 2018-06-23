@@ -59,6 +59,18 @@ namespace AbstractPrinteryView
             }
         }
 
+        private void buttonUpd_Click(object sender, EventArgs e)
+        {
+             if (dataGridView.SelectedRows.Count == 1)
+            {
+                var form = new FormCustumer
+                {
+                   Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value)
+                };
+                form.ShowDialog();
+            }
+        }
+
         private void buttonDel_Click(object sender, EventArgs e)
         {
             if (dataGridView.SelectedRows.Count == 1)
