@@ -105,15 +105,5 @@ namespace AbstractPrinteryView
         {
             Close();
         }
-
-        private void comboBoxRack_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBoxMaterial_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
