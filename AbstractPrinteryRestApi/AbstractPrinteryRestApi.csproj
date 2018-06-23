@@ -133,6 +133,7 @@
     <Compile Include="Controllers\EditionController.cs" />
     <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Controllers\MaterialController.cs" />
+    <Compile Include="Controllers\MessageInfoController.cs" />
     <Compile Include="Controllers\RackController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\TypographerController.cs" />

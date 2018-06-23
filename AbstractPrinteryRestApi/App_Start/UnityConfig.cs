@@ -54,6 +54,7 @@ namespace AbstractPrinteryRestApi
             container.RegisterType<IRackSVC, RackSVCDB>(new HierarchicalLifetimeManager());
             container.RegisterType<IMainSVC, MainSVCDB>(new HierarchicalLifetimeManager());
             container.RegisterType<IReportSVC, ReportSVCBD>(new HierarchicalLifetimeManager());
+            container.RegisterType<IMessageInfoSVC, MessageInfoSVCBD>(new HierarchicalLifetimeManager());
         }
     }
 }

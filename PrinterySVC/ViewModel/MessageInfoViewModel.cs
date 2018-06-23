@@ -8,18 +8,21 @@ using System.Threading.Tasks;
 namespace PrinterySVC.ViewModel
 {
     [DataContract]
-    public class CustomerVievModel
+    public class MessageInfoViewModel
     {
         [DataMember]
-        public int Number { get; set; }
+        public string MessageId { get; set; }
 
         [DataMember]
-        public string Mail { get; set; }
+        public string CustomerName { get; set; }
 
         [DataMember]
-        public string CustomerFIO { get; set; }
+        public DateTime DateDelivery { get; set; }
 
         [DataMember]
-        public List<MessageInfoViewModel> Messages { get; set; }
+        public string Subject { get; set; }
+
+        [DataMember]
+        public string Body { get; set; }
     }
 }
