@@ -112,6 +112,7 @@
     <Compile Include="ViewModel\CustomerVievModel.cs" />
     <Compile Include="ViewModel\EditionMaterialViewModel.cs" />
     <Compile Include="ViewModel\EditionViewModel.cs" />
+    <Compile Include="ViewModel\HttpErrorMessage.cs" />
     <Compile Include="ViewModel\MaterialViewModel.cs" />
     <Compile Include="ViewModel\RackMaterialViewModel.cs" />
     <Compile Include="ViewModel\RacksLoadViewModel.cs" />

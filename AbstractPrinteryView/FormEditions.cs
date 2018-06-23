@@ -2,6 +2,7 @@
 using PrinterySVC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AbstractPrinteryView
@@ -23,24 +24,20 @@ namespace AbstractPrinteryView
         {
             try
             {
-                var response = APIClient.GetRequest("api/Edition/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<EditionViewModel> list = Task.Run(() => APIClient.GetRequestData<List<EditionViewModel>>("api/Edition/GetList")).Result;
+                if (list != null)
                 {
-                    List<EditionViewModel> list = APIClient.GetElement<List<EditionViewModel>>(response);
-                    if (list != null)
-                    {
-                        dataGridView.DataSource = list;
-                        dataGridView.Columns[0].Visible = false;
-                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APIClient.GetError(response));
+                    dataGridView.DataSource = list;
+                    dataGridView.Columns[0].Visible = false;
+                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -48,21 +45,21 @@ namespace AbstractPrinteryView
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             var form = new FormEdition();
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                LoadData();
-            }
+            form.ShowDialog();
+           
         }
 
         private void buttonUpd_Click(object sender, EventArgs e)
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = new FormEdition();
-                form.Number = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
-                if (form.ShowDialog() == DialogResult.OK)
+                if (dataGridView.SelectedRows.Count == 1)
                 {
-                    LoadData();
+                    var form = new FormEdition
+                    {
+                        Number = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value)
+                    };
+                    form.ShowDialog();
                 }
             }
         }
@@ -74,21 +71,23 @@ namespace AbstractPrinteryView
                 if (MessageBox.Show("Удалить запись", "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
-                    try
+                    Task task = Task.Run(() => APIClient.PostRequestData("api/Edition/DelElement", new CustomerBindingModel { Number = id }));
+
+                    task.ContinueWith((prevTask) => MessageBox.Show("Запись удалена. Обновите список", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                    task.ContinueWith((prevTask) =>
                     {
-                        var response = APIClient.PostRequest("api/Edition/DelElement", new CustomerBindingModel { Number = id });
-                        if (!response.Result.IsSuccessStatusCode)
+                        var ex = (Exception)prevTask.Exception;
+                        while (ex.InnerException != null)
                         {
-                            throw new Exception(APIClient.GetError(response));
+                            ex = ex.InnerException;
                         }
-                    }
-                    catch (Exception ex)
-                    {
                         MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    LoadData();
+                    }, TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
+            
         }
 
         private void buttonRef_Click(object sender, EventArgs e)

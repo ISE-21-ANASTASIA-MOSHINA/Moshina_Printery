@@ -23,22 +23,18 @@ namespace AbstractPrinteryView
         {
             if (id.HasValue)
             {
+
                 try
                 {
-                    var response = APIClient.GetRequest("api/Material/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var component = APIClient.GetElement<MaterialViewModel>(response);
-                        textBoxName.Text = component.MaterialName;
-                    }
-                    else
-                    {
-                        throw new Exception(APIClient.GetError(response));
-                    }
-                    
+                    var material = Task.Run(() => APIClient.GetRequestData<MaterialViewModel>("api/Material/Get/" + id.Value)).Result;
+                    textBoxName.Text = material.MaterialName;
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -48,7 +44,6 @@ namespace AbstractPrinteryView
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
