@@ -14,6 +14,8 @@ namespace AbstractPrinteryModel
         [Required]
         public string CustomerFIO { get; set; }
 
+        public string Mail { get; set; }
+
         [ForeignKey("CustomerNumber")]
         public virtual List<Booking> Bookings {get; set;}
     }

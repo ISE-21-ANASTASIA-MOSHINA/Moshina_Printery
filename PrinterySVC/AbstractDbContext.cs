@@ -1,4 +1,5 @@
 ﻿using AbstractPrinteryModel;
+using PrinteryModel;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -30,6 +31,8 @@ namespace PrinterySVC
         public virtual DbSet<Rack> Racks { get; set; }
 
         public virtual DbSet<RackMaterial> RackMaterials { get; set; }
+
+        public virtual DbSet<MessageInfo> MessageInfos { get; set; }
 
         public override int SaveChanges()
         {
